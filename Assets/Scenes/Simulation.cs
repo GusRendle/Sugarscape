@@ -11,7 +11,7 @@ public class Simulation {
     public static class Parameters {
         public static int SUGAR_GROWTH_RATE = 1;
         public static int INITIAL_NUMBER_OF_AGENTS = 400;
-        public static class Endowment {
+        public static class Wealth {
             public static int MIN = 50;
             public static int MAX = 100;
         }

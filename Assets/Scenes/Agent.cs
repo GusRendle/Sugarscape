@@ -17,7 +17,7 @@ public class Agent {
 
     public bool isAlive { get; private set; } = true;
 
-    public readonly int endowment;
+    public readonly int wealth;
     public int sugar { get; private set; }
     public readonly int vision;
     public readonly int metabolism;
@@ -28,7 +28,7 @@ public class Agent {
     public readonly int maximumFertileAge;
     public bool isFertile {
         get {
-            return isAlive && age >= minimumFertileAge && age < maximumFertileAge && sugar >= endowment;
+            return isAlive && age >= minimumFertileAge && age < maximumFertileAge && sugar >= wealth;
         }
     }
 
@@ -38,15 +38,15 @@ public class Agent {
     public Renderer renderer;
 
     public Agent () : this(
-        Utils.RandomIntBetween(Simulation.Parameters.Endowment.MIN, Simulation.Parameters.Endowment.MAX),
+        Utils.RandomIntBetween(Simulation.Parameters.Wealth.MIN, Simulation.Parameters.Wealth.MAX),
         Utils.RandomIntBetween(Simulation.Parameters.Vision.MIN, Simulation.Parameters.Vision.MAX),
         Utils.RandomIntBetween(Simulation.Parameters.Metabolism.MIN, Simulation.Parameters.Metabolism.MAX)
     ) { }
 
-    public Agent (int endowment, int vision, int metabolism) {
+    public Agent (int wealth, int vision, int metabolism) {
         id = NEXT_ID++;
-        this.endowment = endowment;
-        sugar = endowment;
+        this.wealth = wealth;
+        sugar = wealth;
         this.vision = vision;
         this.metabolism = metabolism;
         sex = Random.value < 0.5 ? Sex.MALE : Sex.FEMALE;
@@ -118,7 +118,7 @@ public class Agent {
     }
 
     public int ConsumeSugarRequiredToReproduce () {
-        int required = Mathf.CeilToInt(endowment / 2f);
+        int required = Mathf.CeilToInt(wealth / 2f);
         sugar -= required;
         return required;
     }
@@ -212,9 +212,9 @@ public class Agent {
                 potentialLocations = potentialLocations.FindAll(x => x.agent == null);
                 potentialLocations = Utils.Shuffle(potentialLocations);
                 if ( potentialLocations.Count > 0 ) {
-                    int endowment = ConsumeSugarRequiredToReproduce() + neighbor.ConsumeSugarRequiredToReproduce();
+                    int wealth = ConsumeSugarRequiredToReproduce() + neighbor.ConsumeSugarRequiredToReproduce();
                     Agent baby = new Agent(
-                        endowment,
+                        wealth,
                         Random.value < 0.5 ? vision : neighbor.vision,
                         Random.value < 0.5 ? metabolism : neighbor.metabolism
                     );

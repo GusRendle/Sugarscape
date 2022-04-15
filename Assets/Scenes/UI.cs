@@ -4,21 +4,21 @@ using UnityEngine.UI;
 
 public class UI : MonoBehaviour {
 
-    public Text generateButton;
-    public Text playButton;
+    public Text generateBtn;
+    public Text playBtn;
 
-    public Text colorsDescription;
+    public Text viewDesc;
     public Text growth;
     public Text speed;
     public Text step;
 
-    public InputField endowmentMaxField;
-    public InputField endowmentMinField;
-    public InputField metabolismMaxField;
-    public InputField metabolismMinField;
+    public InputField maxWealthField;
+    public InputField minWealthField;
+    public InputField maxMetabolismField;
+    public InputField minMetabolismField;
     public InputField numberField;
-    public InputField visionMaxField;
-    public InputField visionMinField;
+    public InputField maxVisionField;
+    public InputField minVisionField;
     
     // Start is called before the first frame update
     void Start()
@@ -32,15 +32,15 @@ public class UI : MonoBehaviour {
         speed.text = State.STEPS_PER_SECOND.ToString();
         step.text = "Step: " + Simulation.CURRENT_STEP.ToString();
         if ( State.DONE ) {
-            playButton.transform.parent.GetComponent<Button>().interactable = false;
-            playButton.text = "Done";
+            playBtn.transform.parent.GetComponent<Button>().interactable = false;
+            playBtn.text = "Done";
         }
     }
 
     public void ColorsDefaultToggled (bool value) {
         if ( value ) {
             State.COLORING_OPTION = State.ColoringOptions.DEFAULT;
-            colorsDescription.text = " ";
+            viewDesc.text = " ";
             Simulation.Render();
         }
     }
@@ -48,7 +48,7 @@ public class UI : MonoBehaviour {
     public void ColorsMetabolismToggled (bool value) {
         if ( value ) {
             State.COLORING_OPTION = State.ColoringOptions.BY_METABOLISM;
-            colorsDescription.text = "low = blue medium = purple high = red";
+            viewDesc.text = "low = blue medium = purple high = red";
             Simulation.Render();
         }
     }
@@ -56,7 +56,7 @@ public class UI : MonoBehaviour {
     public void ColorsSexToggled (bool value) {
         if ( value ) {
             State.COLORING_OPTION = State.ColoringOptions.BY_SEX;
-            colorsDescription.text = " ";
+            viewDesc.text = " ";
             Simulation.Render();
         }
     }
@@ -64,31 +64,31 @@ public class UI : MonoBehaviour {
     public void ColorsVisionToggled (bool value) {
         if ( value ) {
             State.COLORING_OPTION = State.ColoringOptions.BY_VISION;
-            colorsDescription.text = "low = red medium = purple high = blue";
+            viewDesc.text = "low = red medium = purple high = blue";
             Simulation.Render();
         }
     }
 
-    public void EndowmentMaxUnfocused (string value) {
+    public void WealthMaxUnfocused (string value) {
         if ( value.Length > 0 ) {
-            int num = Mathf.Max(Simulation.Parameters.Endowment.MIN, int.Parse(value));
-            Simulation.Parameters.Endowment.MAX = num;
-            endowmentMaxField.text = num.ToString();
+            int num = Mathf.Max(Simulation.Parameters.Wealth.MIN, int.Parse(value));
+            Simulation.Parameters.Wealth.MAX = num;
+            maxWealthField.text = num.ToString();
         } else {
-            int num = Simulation.Parameters.Endowment.MIN;
-            Simulation.Parameters.Endowment.MAX = num;
-            endowmentMaxField.text = num.ToString();
+            int num = Simulation.Parameters.Wealth.MIN;
+            Simulation.Parameters.Wealth.MAX = num;
+            maxWealthField.text = num.ToString();
         }
     }
 
-    public void EndowmentMinUnfocused (string value) {
+    public void WealthMinUnfocused (string value) {
         if ( value.Length > 0 ) {
-            int num = Mathf.Clamp(int.Parse(value), 0, Simulation.Parameters.Endowment.MAX);
-            Simulation.Parameters.Endowment.MIN = num;
-            endowmentMinField.text = num.ToString();
+            int num = Mathf.Clamp(int.Parse(value), 0, Simulation.Parameters.Wealth.MAX);
+            Simulation.Parameters.Wealth.MIN = num;
+            minWealthField.text = num.ToString();
         } else {
-            Simulation.Parameters.Endowment.MIN = 0;
-            endowmentMinField.text = "0";
+            Simulation.Parameters.Wealth.MIN = 0;
+            minWealthField.text = "0";
         }
     }
 
@@ -97,9 +97,9 @@ public class UI : MonoBehaviour {
     }
 
     public void GenerateButtonClicked () {
-        generateButton.text = "Generate";
-        playButton.transform.parent.GetComponent<Button>().interactable = true;
-        playButton.text = "Play";
+        generateBtn.text = "Generate";
+        playBtn.transform.parent.GetComponent<Button>().interactable = true;
+        playBtn.text = "Play";
         State.PAUSED = true;
         State.DONE = false;
         Simulation.Init();
@@ -114,11 +114,11 @@ public class UI : MonoBehaviour {
         if ( value.Length > 0 ) {
             int num = Mathf.Max(Simulation.Parameters.Metabolism.MIN, int.Parse(value));
             Simulation.Parameters.Metabolism.MAX = num;
-            metabolismMaxField.text = num.ToString();
+            maxMetabolismField.text = num.ToString();
         } else {
             int num = Simulation.Parameters.Metabolism.MIN;
             Simulation.Parameters.Metabolism.MAX = num;
-            metabolismMaxField.text = num.ToString();
+            maxMetabolismField.text = num.ToString();
         }
     }
 
@@ -126,10 +126,10 @@ public class UI : MonoBehaviour {
         if ( value.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(value), 0, Simulation.Parameters.Metabolism.MAX);
             Simulation.Parameters.Metabolism.MIN = num;
-            metabolismMinField.text = num.ToString();
+            minMetabolismField.text = num.ToString();
         } else {
             Simulation.Parameters.Metabolism.MIN = 0;
-            metabolismMinField.text = "0";
+            minMetabolismField.text = "0";
         }
     }
 
@@ -168,16 +168,16 @@ public class UI : MonoBehaviour {
     }
 
     public void PlayButtonClicked () {
-        generateButton.text = "Reset";
+        generateBtn.text = "Reset";
         if ( State.PAUSED ) {
             State.PAUSED = false;
-            playButton.text = "Pause";
+            playBtn.text = "Pause";
             State.DELTA_TIME = 0;
             Simulation.Step();
             Simulation.Render();
         } else {
             State.PAUSED = true;
-            playButton.text = "Play";
+            playBtn.text = "Play";
         }
     }
 
@@ -189,11 +189,11 @@ public class UI : MonoBehaviour {
         if ( value.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(value), Simulation.Parameters.Vision.MIN, 50);
             Simulation.Parameters.Vision.MAX = num;
-            visionMaxField.text = num.ToString();
+            maxVisionField.text = num.ToString();
         } else {
             int num = Simulation.Parameters.Vision.MIN;
             Simulation.Parameters.Vision.MAX = num;
-            visionMaxField.text = num.ToString();
+            maxVisionField.text = num.ToString();
         }
     }
 
@@ -201,10 +201,10 @@ public class UI : MonoBehaviour {
         if ( value.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(value), 0, Simulation.Parameters.Vision.MAX);
             Simulation.Parameters.Vision.MIN = num;
-            visionMinField.text = num.ToString();
+            minVisionField.text = num.ToString();
         } else {
             Simulation.Parameters.Vision.MIN = 0;
-            visionMinField.text = "0";
+            minVisionField.text = "0";
         }
     }
 

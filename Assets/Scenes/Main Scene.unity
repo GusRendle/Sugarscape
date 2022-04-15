@@ -1020,7 +1020,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 679420846}
         m_TargetAssemblyTypeName: 
-        m_MethodName: EndowmentMaxUnfocused
+        m_MethodName: WealthMaxUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2030,19 +2030,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7753f60765c0bf74c97a8e320be1b859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateButton: {fileID: 255777579}
-  playButton: {fileID: 1348330051}
-  colorsDescription: {fileID: 1818308502}
+  generateBtn: {fileID: 255777579}
+  playBtn: {fileID: 1348330051}
+  viewDesc: {fileID: 1818308502}
   growth: {fileID: 474628649}
   speed: {fileID: 1431871878}
   step: {fileID: 914636958}
-  endowmentMaxField: {fileID: 429467246}
-  endowmentMinField: {fileID: 1209590197}
-  metabolismMaxField: {fileID: 511353937}
-  metabolismMinField: {fileID: 1377748786}
+  maxWealthField: {fileID: 429467246}
+  minWealthField: {fileID: 1209590197}
+  maxMetabolismField: {fileID: 511353937}
+  minMetabolismField: {fileID: 1377748786}
   numberField: {fileID: 1757842866}
-  visionMaxField: {fileID: 757304863}
-  visionMinField: {fileID: 2051674571}
+  maxVisionField: {fileID: 757304863}
+  minVisionField: {fileID: 2051674571}
 --- !u!1 &681601433
 GameObject:
   m_ObjectHideFlags: 0
@@ -3621,7 +3621,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 679420846}
         m_TargetAssemblyTypeName: 
-        m_MethodName: EndowmentMinUnfocused
+        m_MethodName: WealthMinUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
