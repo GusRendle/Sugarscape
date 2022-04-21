@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Sugarscape {
 
-    public Tile[,] sugarscape;
+    public static Tile[,] sugarscape;
 
     public GameObject gameObject;
 

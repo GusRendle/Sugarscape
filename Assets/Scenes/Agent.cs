@@ -23,6 +23,12 @@ public class Agent {
     public GameObject gameObject;
     public Renderer renderer;
 
+    //Pathfinding
+    private List<Tile> path;
+
+    private Tile home = Sugarscape.sugarscape[0, 0];
+
+
     /// <summary>
     /// Default agent constructor
     /// </summary>
@@ -161,18 +167,14 @@ public class Agent {
                 break;
             case Simulation.MovementStyle.CUSTOM:
                 {
-                    if ( nextLocation == null ) {
-                        for ( int i = 0 ; i < 4 ; i++ ) {
-                            potentialLocation = allPotentialLocations[i][0];
-                            if ( potentialLocation.agent != null ) {
-                                continue;
-                            }
-                            potentialSugar = allPotentialLocations[i].Select(x => x.Sugar).Sum();
-                            if ( nextLocation == null || potentialSugar > nextSugar ) {
-                                nextSugar = potentialSugar;
-                                nextLocation = potentialLocation;
-                            }
-                        }
+                    if (path == null || (tile.x == 0 && tile.y == 0) ) {
+                        path = Pathfinding.FindPath(tile, home);
+
+                        nextLocation = path[0];
+                        path.RemoveAt(0);
+                    } else {
+                        nextLocation = path[0];
+                        path.RemoveAt(0);
                     }
                 }
                 break;

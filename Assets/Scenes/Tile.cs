@@ -18,6 +18,16 @@ public class Tile {
     public GameObject gameObject;
     public Agent agent;
 
+    //Pathfinding
+    //The cost to this node from the start node
+    public int gCost;
+    //The 'as the crow flies' cost from this node to the end
+    public int hCost;
+    //gCost + hCost
+    public int fCost;
+    public bool isWalkable;
+    public Tile previousTile;
+
     /// <summary>
     /// Tile constructor
     /// </summary>
@@ -28,8 +38,8 @@ public class Tile {
         this.x = x;
         this.y = y;
         this.capacity = capacity;
-
         Sugar = capacity;
+        isWalkable = true;
 
         InitialiseLocation();
     }
@@ -172,4 +182,13 @@ public class Tile {
         renderer.sharedMaterial = Materials.Sugar;
     }
 
+    public void CalculateFCost() {
+        fCost = gCost + hCost;
+    }
+
+    public void SetIsWalkable(bool isWalkable) {
+        this.isWalkable = isWalkable;
+    }
+
 }
+   
