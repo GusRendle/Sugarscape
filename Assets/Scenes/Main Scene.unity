@@ -209,8 +209,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: MovementClassicToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: ClassicMovementToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1019,8 +1019,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: WealthMaxUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MaxWealthUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1545,8 +1545,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: MetabolismMaxUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MaxMetabolismUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1797,7 +1797,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Agent colouring
+  m_Text: Agent View
 --- !u!222 &578483455
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2033,7 +2033,7 @@ MonoBehaviour:
   generateBtn: {fileID: 255777579}
   playBtn: {fileID: 1348330051}
   viewDesc: {fileID: 1818308502}
-  growth: {fileID: 474628649}
+  regrowthRate: {fileID: 474628649}
   speed: {fileID: 1431871878}
   step: {fileID: 914636958}
   maxWealthField: {fileID: 429467246}
@@ -2129,8 +2129,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: ColorsSexToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: SexViewToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2359,8 +2359,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: ColorsMetabolismToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MetabolismViewToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2483,8 +2483,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: VisionMaxUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MaxVisionUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2647,8 +2647,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: LessButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: GrowthDecBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3226,8 +3226,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: ColorsDefaultToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: DefaultViewToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3398,8 +3398,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: MoreButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: GrowthIncBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3620,8 +3620,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: WealthMinUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MinWealthUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3815,8 +3815,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: SlowerButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: SpeedDecBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4256,8 +4256,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: ColorsVisionToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: VisionViewToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4575,7 +4575,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Play
+  m_Text: Run
 --- !u!222 &1348330052
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4678,8 +4678,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: MetabolismMinUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MinMetabolismUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5306,8 +5306,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: NumberFieldUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: AgentCountUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5319,19 +5319,7 @@ MonoBehaviour:
         m_CallState: 2
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: NumberFieldChanged
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
@@ -5696,8 +5684,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: GenerateButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: GenBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5831,8 +5819,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: MovementCustomToggled
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: CustomMovementToggled
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6262,8 +6250,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: VisionMinUnfocused
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: MinVisionUnfocused
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6426,8 +6414,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: FasterButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: SpeedIncBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -6559,8 +6547,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 679420846}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: PlayButtonClicked
+        m_TargetAssemblyTypeName: UI, Assembly-CSharp
+        m_MethodName: RunBtnClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

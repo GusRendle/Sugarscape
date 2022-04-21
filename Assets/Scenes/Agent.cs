@@ -6,140 +6,151 @@ using UnityEngine;
 
 public class Agent {
 
-    private static int NEXT_ID = 0;
-
-    public enum Sex {
-        MALE,
-        FEMALE
-    }
-
+    //Values used in agent generation
+    private static int staticId = 0;
     public int id;
-
-    public bool isAlive { get; private set; } = true;
-
     public readonly int wealth;
-    public int sugar { get; private set; }
     public readonly int vision;
     public readonly int metabolism;
-    public readonly Sex sex;
-    public int age { get; private set; } = 0;
-    public readonly int maximumAge;
-    public readonly int minimumFertileAge;
-    public readonly int maximumFertileAge;
-    public bool isFertile {
-        get {
-            return isAlive && age >= minimumFertileAge && age < maximumFertileAge && sugar >= wealth;
-        }
-    }
 
-    public Location location;
+    //Values used throughout simulation
+    public bool IsAlive { get; private set; } = true;
+    //The agent's accumulated sugar stores
+    public int SugarStore { get; private set; }
+    //Agent's current location
+    public Tile tile;
 
     public GameObject gameObject;
     public Renderer renderer;
 
+    /// <summary>
+    /// Default agent constructor
+    /// </summary>
+    /// <returns>The Agent object</returns>
     public Agent () : this(
-        Utils.RandomIntBetween(Simulation.Parameters.Wealth.MIN, Simulation.Parameters.Wealth.MAX),
-        Utils.RandomIntBetween(Simulation.Parameters.Vision.MIN, Simulation.Parameters.Vision.MAX),
-        Utils.RandomIntBetween(Simulation.Parameters.Metabolism.MIN, Simulation.Parameters.Metabolism.MAX)
+        Random.Range(Simulation.Wealth.min, Simulation.Wealth.max + 1),
+        Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
+        Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1)
     ) { }
 
+    /// <summary>
+    /// Arg agent constructor
+    /// </summary>
+    /// <param name="wealth">Wealth of the agent</param>
+    /// <param name="vision">Vision of the agent</param>
+    /// <param name="metabolism">Metabolism of the agent</param>
     public Agent (int wealth, int vision, int metabolism) {
-        id = NEXT_ID++;
         this.wealth = wealth;
-        sugar = wealth;
         this.vision = vision;
         this.metabolism = metabolism;
-        sex = Random.value < 0.5 ? Sex.MALE : Sex.FEMALE;
-        maximumAge = Utils.RandomIntBetween(Simulation.Parameters.Lifespan.MIN, Simulation.Parameters.Lifespan.MAX);
-        if ( sex == Sex.MALE ) {
-            minimumFertileAge = Utils.RandomIntBetween(Simulation.Parameters.Fertility.Male.Begin.MIN, Simulation.Parameters.Fertility.Male.Begin.MAX);
-            maximumFertileAge = Utils.RandomIntBetween(Simulation.Parameters.Fertility.Male.End.MIN, Simulation.Parameters.Fertility.Male.End.MAX);
-        } else {
-            minimumFertileAge = Utils.RandomIntBetween(Simulation.Parameters.Fertility.Female.Begin.MIN, Simulation.Parameters.Fertility.Female.Begin.MAX);
-            maximumFertileAge = Utils.RandomIntBetween(Simulation.Parameters.Fertility.Female.End.MIN, Simulation.Parameters.Fertility.Female.End.MAX);
-        }
-        InitGameObject();
+        id = staticId++;
+        SugarStore = wealth;
+        InitialiseAgent();
     }
 
-    public void Destroy () {
-        Object.Destroy(gameObject);
-    }
-
+    /// <summary>
+    /// Manage's agents actions per step
+    /// </summary>
     public void Step () {
         Move();
-        Harvest();
+        Gather();
         Eat();
-        if ( sugar < 0 || age == maximumAge ) {
+        if ( SugarStore < 0 ) {
             Die();
             return;
         }
-        Age();
-        if ( isFertile ) {
-            Reproduce();
-        }
     }
 
+    /// <summary>
+    /// Renders the agent based on the current view
+    /// </summary>
     public void Render () {
-        gameObject.transform.localPosition = new Vector3(location.y, 0, location.x);
-        switch ( State.COLORING_OPTION ) {
-            case State.ColoringOptions.DEFAULT:
-                renderer.sharedMaterial = Materials.DEFAULT;
+        //Renders agent at it's location
+        gameObject.transform.localPosition = new Vector3(tile.y, 0, tile.x);
+        //Based on the current view, agents are rendered differently
+        switch ( UI.currentView ) {
+            case UI.ViewOptions.DEFAULT:
+                renderer.sharedMaterial = Materials.DefaultColour;
                 break;
-            case State.ColoringOptions.BY_SEX:
-                renderer.sharedMaterial = sex == Sex.MALE ? Materials.MALE : Materials.FEMALE;
+            case UI.ViewOptions.SEX:
+                //renderer.sharedMaterial = sex == Sex.MALE ? Materials.MALE : Materials.FEMALE;
                 break;
-            case State.ColoringOptions.BY_VISION:
+            case UI.ViewOptions.VISION:
+                //The max and min vision values for the simulation are split into thirds, and which third the agent belongs to determins it's colour
                 {
-                    float firstTercile = Utils.GetFirstTercile(Simulation.Parameters.Vision.MIN, Simulation.Parameters.Vision.MAX);
-                    float secondTercile = Utils.GetSecondTercile(Simulation.Parameters.Vision.MIN, Simulation.Parameters.Vision.MAX);
+                    float firstTercile = GetFirstTercile(Simulation.Vision.min, Simulation.Vision.max);
+                    float secondTercile = GetSecondTercile(Simulation.Vision.min, Simulation.Vision.max);
                     if ( vision < firstTercile ) {
-                        renderer.sharedMaterial = Materials.LOW_VISION;
+                        renderer.sharedMaterial = Materials.LowColour;
                     } else if ( vision <= secondTercile ) {
-                        renderer.sharedMaterial = Materials.MEDIUM_VISION;
+                        renderer.sharedMaterial = Materials.MedColour;
                     } else {
-                        renderer.sharedMaterial = Materials.HIGH_VISION;
+                        renderer.sharedMaterial = Materials.HighColour;
                     }
                 }
                 break;
-            case State.ColoringOptions.BY_METABOLISM:
+            case UI.ViewOptions.METABOLISM:
+                //Like vision, possible metabolism values are also split into thirds
                 {
-                    float firstTercile = Utils.GetFirstTercile(Simulation.Parameters.Metabolism.MIN, Simulation.Parameters.Metabolism.MAX);
-                    float secondTercile = Utils.GetSecondTercile(Simulation.Parameters.Metabolism.MIN, Simulation.Parameters.Metabolism.MAX);
+                    float firstTercile = GetFirstTercile(Simulation.Metabolism.min, Simulation.Metabolism.max);
+                    float secondTercile = GetSecondTercile(Simulation.Metabolism.min, Simulation.Metabolism.max);
                     if ( metabolism < firstTercile ) {
-                        renderer.sharedMaterial = Materials.LOW_METABOLISM;
+                        renderer.sharedMaterial = Materials.LowColour;
                     } else if ( metabolism <= secondTercile ) {
-                        renderer.sharedMaterial = Materials.MEDIUM_METABOLISM;
+                        renderer.sharedMaterial = Materials.MedColour;
                     } else {
-                        renderer.sharedMaterial = Materials.HIGH_METABOLISM;
+                        renderer.sharedMaterial = Materials.HighColour;
                     }
                 }
                 break;
         }
     }
 
-    public int ConsumeSugarRequiredToReproduce () {
-        int required = Mathf.CeilToInt(wealth / 2f);
-        sugar -= required;
-        return required;
+    /// <summary>
+    /// Gets the first Tercile (value between the 1st and 2nd thirds)
+    /// </summary>
+    /// <param name="min">Minimum value of the range</param>
+    /// <param name="max">Maximum value of the range</param>
+    /// <returns></returns>
+    private float GetFirstTercile (int min, int max) {
+        return min + (max - min) / 3f;
+    }
+
+    /// <summary>
+    /// Gets the second Tercile (value between the 2nd and 3rd thirds)
+    /// </summary>
+    /// <param name="min">Minimum value of the range</param>
+    /// <param name="max">Maximum value of the range</param>
+    /// <returns></returns>
+    private float GetSecondTercile (int min, int max) {
+        return min + (max - min) / 3f * 2;
     }
 
     private void Move () {
+        //The location the agent will move to next
+        Tile nextLocation = null;
+        //The sugar value of this location
         int nextSugar = -1;
+        //The location the agent is currently evaluating 
+        Tile potentialLocation = null;
+        //The sugar value of this location
         int potentialSugar = -1;
-        Location nextLocation = null;
-        Location potentialLocation = null;
-        List<List<Location>> allPotentialLocations = Utils.Shuffle(location.GetAllLocationsInSight(vision));
-
-        switch ( Simulation.Parameters.MOVEMENT_STRATEGY ) {
-            case Simulation.MovementStrategies.CLASSIC:
+        //All locations the agent can see are shuffled, as per the movement rule
+        List<List<Tile>> allPotentialLocations = Main.Shuffle(tile.GetAllLocationsInSight(vision));
+        //Agents move differently depending on the current movement rule
+        switch ( Simulation.movementStyle ) {
+            case Simulation.MovementStyle.CLASSIC:
                 {
                     for ( int i = 0 ; i < vision ; i++ ) {
                         for ( int j = 0 ; j < 4 ; j++ ) {
+                            //As the locations start from 0, in the case of equal sugar amounts, the closest is chosen.
                             potentialLocation = allPotentialLocations[j][i];
+                            //Checks location for other agent
                             if ( potentialLocation.agent != null ) {
                                 continue;
                             }
-                            potentialSugar = potentialLocation.sugar;
+                            potentialSugar = potentialLocation.Sugar;
+                            //If new location has more sugar than current best, set new location to current best
                             if ( nextLocation == null || potentialSugar > nextSugar ) {
                                 nextSugar = potentialSugar;
                                 nextLocation = potentialLocation;
@@ -148,36 +159,15 @@ public class Agent {
                     }
                 }
                 break;
-            case Simulation.MovementStrategies.CUSTOM:
+            case Simulation.MovementStyle.CUSTOM:
                 {
-                    if ( isFertile ) {
-                        for ( int i = 0 ; i < vision ; i++ ) {
-                            for ( int j = 0 ; j < 4 ; j++ ) {
-                                if ( i == 0 ) {
-                                    potentialLocation = location;
-                                } else {
-                                    potentialLocation = allPotentialLocations[j][0];
-                                    if ( potentialLocation.agent != null ) {
-                                        continue;
-                                    }
-                                }
-                                Agent potentialMate = allPotentialLocations[j][i].agent;
-                                if ( potentialMate != null && potentialMate.sex != sex && potentialMate.isFertile ) {
-                                    nextLocation = potentialLocation;
-                                    j = 4;
-                                    i = vision;
-                                    break;
-                                }
-                            }
-                        }
-                    }
                     if ( nextLocation == null ) {
                         for ( int i = 0 ; i < 4 ; i++ ) {
                             potentialLocation = allPotentialLocations[i][0];
                             if ( potentialLocation.agent != null ) {
                                 continue;
                             }
-                            potentialSugar = allPotentialLocations[i].Select(x => x.sugar).Sum();
+                            potentialSugar = allPotentialLocations[i].Select(x => x.Sugar).Sum();
                             if ( nextLocation == null || potentialSugar > nextSugar ) {
                                 nextSugar = potentialSugar;
                                 nextLocation = potentialLocation;
@@ -187,76 +177,58 @@ public class Agent {
                 }
                 break;
         }
-
+        //Removes the agent from the current location, and adds it to the new location
         if ( nextLocation != null ) {
-            location.agent = null;
-            location = nextLocation;
-            location.agent = this;
+            tile.agent = null;
+            tile = nextLocation;
+            tile.agent = this;
         }
     }
 
-    private void Harvest () {
-        sugar += location.Harvest();
+    private void Gather () {
+        SugarStore += tile.Gather();
     }
 
+    /// <summary>
+    /// Each step, the sugar stores are depleted by the amount the agent needs to survive.
+    /// If the agent eats sugar it doesn't have, it dies.
+    /// </summary>
     private void Eat () {
-        sugar -= metabolism;
+        SugarStore -= metabolism;
     }
 
-    private void Reproduce () {
-        List<Agent> oppositeSexNeighbors = GetNeighbors().FindAll(x => x.sex != sex);
-        foreach ( Agent neighbor in Utils.Shuffle(oppositeSexNeighbors) ) {
-            if ( neighbor.isFertile ) {
-                List<Location> potentialLocations = location.GetNeighboringLocations();
-                potentialLocations.AddRange(neighbor.location.GetNeighboringLocations());
-                potentialLocations = potentialLocations.FindAll(x => x.agent == null);
-                potentialLocations = Utils.Shuffle(potentialLocations);
-                if ( potentialLocations.Count > 0 ) {
-                    int wealth = ConsumeSugarRequiredToReproduce() + neighbor.ConsumeSugarRequiredToReproduce();
-                    Agent baby = new Agent(
-                        wealth,
-                        Random.value < 0.5 ? vision : neighbor.vision,
-                        Random.value < 0.5 ? metabolism : neighbor.metabolism
-                    );
-                    Simulation.agents.Add(baby);
-                    baby.location = potentialLocations[0];
-                    potentialLocations[0].agent = baby;
-                    baby.Render();
-                }
-            }
-        }
-    }
-
+    /// <summary>
+    /// On complete lack of sugar, agent is killed and removed from the simulation
+    /// </summary>
     private void Die () {
-        isAlive = false;
-        location.agent = null;
+        IsAlive = false;
+        tile.agent = null;
+        Destroy();
+    }
+
+    /// <summary>
+    /// Destroys the agent
+    /// </summary>
+    public void Destroy () {
         Object.Destroy(gameObject);
     }
 
-    private void Age () {
-        age++;
-    }
-
-    private List<Agent> GetNeighbors () {
-        List<Agent> neighbors = new List<Agent>();
-        neighbors.Add(location.north.agent);
-        neighbors.Add(location.south.agent);
-        neighbors.Add(location.east.agent);
-        neighbors.Add(location.west.agent);
-        return neighbors.FindAll(n => n != null);
-    }
-
-    private void InitGameObject () {
-        gameObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+    /// <summary>
+    /// Creates the unity Game Object for the agent
+    /// </summary>
+    private void InitialiseAgent () {
+        gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         gameObject.name = "Agent" + id;
-        gameObject.transform.localScale = 0.9f * Vector3.one;
-
+        //Sets the size of the agent on the scape
+        gameObject.transform.localScale = new Vector3(0.9f,0.9f,0.9f);
+        //As the simulation does not model physics, the collider is unnecessary overhead
         Object.Destroy(gameObject.GetComponent<Collider>());
 
+        //Initialises Renderer
         renderer = gameObject.GetComponent<Renderer>();
         renderer.receiveShadows = false;
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        renderer.sharedMaterial = Materials.DEFAULT;
+        renderer.sharedMaterial = Materials.DefaultColour;
     }
 
 }

@@ -3,105 +3,106 @@ using System.Collections.Generic;
 
 public class Simulation {
 
-    public enum MovementStrategies {
+// Enum for diffrent movement styles
+    public enum MovementStyle {
         CLASSIC,
         CUSTOM
     }
 
-    public static class Parameters {
-        public static int SUGAR_GROWTH_RATE = 1;
-        public static int INITIAL_NUMBER_OF_AGENTS = 400;
-        public static class Wealth {
-            public static int MIN = 50;
-            public static int MAX = 100;
-        }
-        public static class Vision {
-            public static int MIN = 1;
-            public static int MAX = 6;
-        }
-        public static class Metabolism {
-            public static int MIN = 1;
-            public static int MAX = 4;
-        }
-        public static class Lifespan {
-            public static int MIN = 60;
-            public static int MAX = 100;
-        }
-        public static class Fertility {
-            public static class Male {
-                public static class Begin {
-                    public static int MIN = 12;
-                    public static int MAX = 15;
-                }
-                public static class End {
-                    public static int MIN = 50;
-                    public static int MAX = 60;
-                }
-            }
-            public static class Female {
-                public static class Begin {
-                    public static int MIN = 12;
-                    public static int MAX = 15;
-                }
-                public static class End {
-                    public static int MIN = 40;
-                    public static int MAX = 50;
-                }
-            }
-        }
-        public static MovementStrategies MOVEMENT_STRATEGY = MovementStrategies.CLASSIC;
+    public static int growbackRate = 1;
+    public static int initialAgentCount = 400;
+    public static class Wealth {
+        public static int min = 50;
+        public static int max = 100;
     }
+    public static class Vision {
+        public static int min = 1;
+        public static int max = 6;
+    }
+    public static class Metabolism {
+        public static int min = 1;
+        public static int max = 4;
+    }
+    public static class Lifespan {
+        public static int min = 60;
+        public static int max = 100;
+    }
+    
+    public static MovementStyle movementStyle = MovementStyle.CLASSIC;
 
-    public static int CURRENT_STEP { get; private set; } = 0;
+    public static int CurrentStep { get; private set; } = 0;
 
-    public static Environment environment;
+    public static Sugarscape sugarscape;
     public static List<Agent> agents;
 
-    public static void Init () {
-        CURRENT_STEP = 0;
-        InitEnvironment();
-        InitAgents();
+    /// <summary>
+    /// Initialises / resets the simulation
+    /// </summary>
+    public static void Initialise () {
+        CurrentStep = 0;
+        InitialiseSugarscape();
+        InitialiseAgents();
+        Render();
     }
 
+    /// <summary>
+    /// Runs each 'step' of the simulation
+    /// </summary>
+    /// <returns>False if the simulation has finished</returns>
     public static bool Step () {
-        List<Agent> liveAgents = agents.FindAll(x => x.isAlive);
+        List<Agent> liveAgents = agents.FindAll(x => x.IsAlive);
         if ( liveAgents.Count == 0 ) {
+            //All agents are dead
             return false;
         }
-        foreach ( Agent agent in Utils.Shuffle(liveAgents)) {
+        //Randomly goes calls for each agent to handle the step
+        foreach ( Agent agent in Main.Shuffle(liveAgents)) {
             agent.Step();
-        }
-        environment.Step();
-        CURRENT_STEP++;
+        } 
+        sugarscape.Step();
+        CurrentStep++;
         return true;
     }
 
+    /// <summary>
+    /// handles rendering of the sugarscape and agents
+    /// </summary>
     public static void Render () {
-        environment.Render();
-        foreach ( Agent agent in agents.FindAll(x => x.isAlive) ) {
+        sugarscape.Render();
+        // Renders all alive agents
+        foreach ( Agent agent in agents.FindAll(x => x.IsAlive) ) {
             agent.Render();
         }
     }
-
-    private static void InitEnvironment () {
-        if ( environment != null ) {
-            environment.Destroy();
+    
+    /// <summary>
+    /// Initialises the Sugarscape object for the simulation
+    /// </summary>
+    private static void InitialiseSugarscape () {
+        //Destroys previous sugarscape and their gameobjects (in case of scape regeneration)
+        if ( sugarscape != null ) {
+            sugarscape.Destroy();
         }
-        environment = new Environment();
+        sugarscape = new Sugarscape();
     }
 
-    private static void InitAgents () {
+    /// <summary>
+    /// Initialises all agents on the sugarscape
+    /// </summary>
+    private static void InitialiseAgents () {
+        //Destroys previous agents and their gameobjects (in case of scape regeneration)
         if ( agents != null ) {
             foreach ( Agent agent in agents ) {
                 agent.Destroy();
             }
         }
         agents = new List<Agent>();
-        for ( int i = 0 ; i < Parameters.INITIAL_NUMBER_OF_AGENTS ; i++ ) {
+        for ( int i = 0 ; i < initialAgentCount ; i++ ) {
             Agent agent = new Agent();
-            Location location = environment.GetUnoccupiedLocation();
-            agent.location = location;
-            location.agent = agent;
+            //Links each agent to an unoccupied location
+            Tile tile = sugarscape.GetUnoccupiedTile();
+            agent.tile = tile;
+            tile.agent = agent;
             agents.Add(agent);
         }
     }

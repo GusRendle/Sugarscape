@@ -1,11 +1,120 @@
-﻿
-using System.Collections.Generic;
 
 using UnityEngine;
 
-public class Utils {
+public class Sugarscape {
 
-    public static int[,] SUGAR_CAPACITIES = new int[,] {
+    public Tile[,] sugarscape;
+
+    public GameObject gameObject;
+
+    /// <summary>
+    /// Constructor for the Sugarscape
+    /// </summary>
+    public Sugarscape () {
+        InitialiseSugarscape();
+        InitialiseSugarscapeObject();
+    }
+
+    /// <summary>
+    /// Destroys the sugarscape, as well as it's component tiles
+    /// </summary>
+    public void Destroy () {
+        for ( int y = 0 ; y < sugarscape.GetLength(0) ; y++ ) {
+            for ( int x = 0 ; x < sugarscape.GetLength(1) ; x++ ) {
+                Object.Destroy(sugarscape[y, x].gameObject);
+            }
+        }
+        Object.Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Steps forward each tile in the sugarscape, for sugar regrowth
+    /// </summary>
+    public void Step () {
+        for ( int y = 0 ; y < sugarscape.GetLength(0) ; y++ ) {
+            for ( int x = 0 ; x < sugarscape.GetLength(1) ; x++ ) {
+                sugarscape[y, x].Step();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Renders all tiles that make up the sugarscape
+    /// </summary>
+    public void Render () {
+        for ( int y = 0 ; y < sugarscape.GetLength(0) ; y++ ) {
+            for ( int x = 0 ; x < sugarscape.GetLength(1) ; x++ ) {
+                sugarscape[y, x].Render();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Randomly selects tiles until one with no agent is found.
+    /// </summary>
+    /// <returns>An unoccupied tile</returns>
+    public Tile GetUnoccupiedTile () {
+        while ( true ) {
+            Tile tile = sugarscape[Random.Range(0, sugarscape.GetLength(0)), Random.Range(0, sugarscape.GetLength(1))];
+            if ( tile.agent == null ) {
+                return tile;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Using sugarscapeMap, initialises all tiles on the sugarscape
+    /// </summary>
+    private void InitialiseSugarscape () {
+        sugarscape = new Tile[sugarscapeMap.GetLength(0), sugarscapeMap.GetLength(1)];
+
+        int height = sugarscape.GetLength(0);
+        int width = sugarscape.GetLength(1);
+
+        for ( int y = 0 ; y < height ; y++ ) {
+            for ( int x = 0 ; x < width; x++ ) {
+                sugarscape[y, x] = new Tile(x, y, sugarscapeMap[y, x]);
+            }
+        }
+
+        //Once all tiles are initialised, their neighbors are set
+        for ( int y = 0 ; y < height ; y++ ) {
+            for ( int x = 0 ; x < width ; x++ ) {
+                //If an edge value, neighbour is set to the tile on the other side of the scape, so the scape loops
+                int up = y == 0 ? height - 1 : y - 1;
+                int down = ( y + 1 ) % height;
+                int left = x == 0 ? width - 1 : x - 1;
+                int right = ( x + 1 ) % width;
+                sugarscape[y, x].SetNeighbors(
+                    sugarscape[up, x],
+                    sugarscape[down, x],
+                    sugarscape[y, right],
+                    sugarscape[y, left]
+                );
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates the background gameObject for the Sugarscape
+    /// </summary>
+    private void InitialiseSugarscapeObject () {
+        gameObject = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        gameObject.name = "Sugarscape";
+        gameObject.transform.localScale *= 5;
+        gameObject.transform.localPosition = new Vector3(24.5f, -1.05f, 24.5f);
+        
+        //As the simulation does not model physics, the collider is unnecessary overhead
+        Object.Destroy(gameObject.GetComponent<Collider>());
+
+        Renderer renderer = gameObject.GetComponent<Renderer>();
+        renderer.receiveShadows = false;
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        renderer.sharedMaterial = Materials.Background;
+    }
+
+    //The default sugarscape sugar distribution
+    public static int[,] sugarscapeMap = new int[,] {
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2},
@@ -57,39 +166,5 @@ public class Utils {
         {1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
     };
-
-    public static int RandomInt (int max) {
-        while ( true ) {
-            int num = Mathf.FloorToInt(Random.value * max);
-            if ( num != max ) {
-                return num;
-            }
-        }
-    }
-
-    public static int RandomIntBetween (int min, int max) {
-        return RandomInt(max - min + 1) + min;
-    }
-
-    public static List<T> Shuffle<T> (List<T> list) {
-        List<T> shuffled = new List<T>(list);
-        int n = list.Count;
-        while ( n > 1 ) {
-            n--;
-            int k = RandomInt(n + 1);
-            T item = shuffled[k];
-            shuffled[k] = shuffled[n];
-            shuffled[n] = item;
-        }
-        return shuffled;
-    }
-
-    public static float GetFirstTercile (int min, int max) {
-        return min + (max - min) / 3f;
-    }
-
-    public static float GetSecondTercile (int min, int max) {
-        return min + (max - min) / 3f * 2;
-    }
 
 }
