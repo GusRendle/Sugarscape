@@ -98,10 +98,9 @@ public class Simulation {
         }
         agents = new List<Agent>();
         for ( int i = 0 ; i < initialAgentCount ; i++ ) {
-            Agent agent = new Agent();
             //Links each agent to an unoccupied location
             Tile tile = sugarscape.GetUnoccupiedTile();
-            agent.tile = tile;
+            Agent agent = new Agent(tile);
             tile.agent = agent;
             agents.Add(agent);
         }

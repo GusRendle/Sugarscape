@@ -26,17 +26,18 @@ public class Agent {
     //Pathfinding
     private List<Tile> path;
 
-    private Tile home = Sugarscape.sugarscape[0, 0];
+    private Tile home;
 
 
     /// <summary>
     /// Default agent constructor
     /// </summary>
     /// <returns>The Agent object</returns>
-    public Agent () : this(
+    public Agent (Tile tile) : this(
         Random.Range(Simulation.Wealth.min, Simulation.Wealth.max + 1),
         Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
-        Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1)
+        Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1),
+        tile
     ) { }
 
     /// <summary>
@@ -45,10 +46,12 @@ public class Agent {
     /// <param name="wealth">Wealth of the agent</param>
     /// <param name="vision">Vision of the agent</param>
     /// <param name="metabolism">Metabolism of the agent</param>
-    public Agent (int wealth, int vision, int metabolism) {
+    public Agent (int wealth, int vision, int metabolism, Tile home) {
         this.wealth = wealth;
         this.vision = vision;
         this.metabolism = metabolism;
+        this.tile = home;
+        this.home = home;
         id = staticId++;
         SugarStore = wealth;
         InitialiseAgent();
@@ -166,15 +169,21 @@ public class Agent {
                 }
                 break;
             case Simulation.MovementStyle.CUSTOM:
+            //VISION = 49
                 {
-                    if (path == null || (tile.x == 0 && tile.y == 0) ) {
-                        path = Pathfinding.FindPath(tile, home);
-
+                    if (path == null || path.Count == 0) {
+                        //Agent is searching for sugar
+                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile));
                         nextLocation = path[0];
                         path.RemoveAt(0);
                     } else {
+                        //Agent is already moving 
                         nextLocation = path[0];
                         path.RemoveAt(0);
+                        if (path.Count == 0 && nextLocation != home) {
+                            //If at the final stage of journey not to home, set next journey to return home
+                            path = Pathfinding.FindPath(tile, home);
+                        }
                     }
                 }
                 break;

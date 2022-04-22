@@ -28,10 +28,9 @@ public static class Pathfinding {
 
         for (int x = 0; x < Sugarscape.sugarscape.GetLength(0); x++) {
             for (int y = 0; y < Sugarscape.sugarscape.GetLength(1); y++) {
-                Tile node = Sugarscape.sugarscape[x, y];
-                node.gCost = 9999;
-                //node.CalculateFCost();
-                node.previousTile = null;
+                Sugarscape.sugarscape[x, y].gCost = 9999;
+                Sugarscape.sugarscape[x, y].CalculateFCost();
+                Sugarscape.sugarscape[x, y].previousTile = null;
             }
         }
 
@@ -143,6 +142,24 @@ public static class Pathfinding {
             }
         }
         return lowestFCostNode;
+    }
+
+    /// <summary>
+    /// Given a tile, returns the closest sugar containing tile
+    /// </summary>
+    /// <param name="startTile">The tile to start the search from</param>
+    /// <returns>The closest tile containing sugar</returns>
+    public static Tile FindClosestSugar(Tile startTile) {
+        var sugarDistances = new List<KeyValuePair<int, Tile>>();
+        foreach (Tile sugarTile in Sugarscape.sugarscape)
+        {
+            if (sugarTile.Sugar == 4) {
+                sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
+            }
+    
+        }
+        sugarDistances.Sort((x, y) => x.Key.CompareTo(y.Key));
+        return sugarDistances[0].Value;
     }
 
 }
