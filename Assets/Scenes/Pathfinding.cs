@@ -153,7 +153,7 @@ public static class Pathfinding {
         var sugarDistances = new List<KeyValuePair<int, Tile>>();
         foreach (Tile sugarTile in Sugarscape.sugarscape)
         {
-            if (sugarTile.Sugar == 4) {
+            if (sugarTile.Sugar > 0) {
                 sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
             }
     

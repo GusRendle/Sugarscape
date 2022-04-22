@@ -9,7 +9,7 @@ public class Simulation {
         CUSTOM
     }
 
-    public static int growbackRate = 1;
+    public static int growbackRate = 43;
     public static int initialAgentCount = 400;
     public static class Wealth {
         public static int min = 50;

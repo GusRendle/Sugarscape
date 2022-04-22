@@ -228,6 +228,11 @@ public class UI : MonoBehaviour {
     public void CustomMovementToggled (bool isToggled) {
         if ( isToggled ) {
             Simulation.movementStyle = Simulation.MovementStyle.CUSTOM;
+            Simulation.Vision.max = 49;
+            maxVisionField.text = "49";
+            Simulation.Vision.min = 49;
+            minVisionField.text ="49";
+
         }
     }
 

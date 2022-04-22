@@ -37,7 +37,7 @@ public class Tile {
     public Tile (int x, int y, int capacity) {
         this.x = x;
         this.y = y;
-        this.capacity = capacity;
+        this.capacity = capacity * 50;
         Sugar = capacity;
         isWalkable = true;
 
@@ -80,10 +80,15 @@ public class Tile {
     /// Removes sugar from this tile, returns the value of sugar to the agent
     /// </summary>
     /// <returns>The sugar gathered from this tile</returns>
-    public int Gather () {
+    public int Gather (int sugarToTake) {
         int sugar = this.Sugar;
-        this.Sugar = 0;
-        return sugar;
+        if (sugarToTake < this.Sugar) {
+            this.Sugar -= sugarToTake;
+            return sugarToTake;
+        } else {
+            this.Sugar = 0;
+            return sugar;
+        }
     }
 
     /// <summary>

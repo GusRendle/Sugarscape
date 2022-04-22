@@ -9,7 +9,6 @@ public class Agent {
     //Values used in agent generation
     private static int staticId = 0;
     public int id;
-    public readonly int wealth;
     public readonly int vision;
     public readonly int metabolism;
 
@@ -25,9 +24,12 @@ public class Agent {
 
     //Pathfinding
     private List<Tile> path;
+    private readonly Tile home;
 
-    private Tile home;
-
+    private readonly int income;
+    private int wealth;
+    private readonly int speed =1;
+    private readonly float greed = 0.1f;
 
     /// <summary>
     /// Default agent constructor
@@ -43,17 +45,18 @@ public class Agent {
     /// <summary>
     /// Arg agent constructor
     /// </summary>
-    /// <param name="wealth">Wealth of the agent</param>
+    /// <param name="income">Income of the agent</param>
     /// <param name="vision">Vision of the agent</param>
     /// <param name="metabolism">Metabolism of the agent</param>
-    public Agent (int wealth, int vision, int metabolism, Tile home) {
-        this.wealth = wealth;
+    public Agent (int income, int vision, int metabolism, Tile home) {
+        this.income = income;
         this.vision = vision;
         this.metabolism = metabolism;
         this.tile = home;
         this.home = home;
         id = staticId++;
-        SugarStore = wealth;
+        SugarStore = metabolism * 20;
+        wealth = income * 5;
         InitialiseAgent();
     }
 
@@ -61,8 +64,8 @@ public class Agent {
     /// Manage's agents actions per step
     /// </summary>
     public void Step () {
+        wealth += income;
         Move();
-        Gather();
         Eat();
         if ( SugarStore < 0 ) {
             Die();
@@ -177,13 +180,24 @@ public class Agent {
                         nextLocation = path[0];
                         path.RemoveAt(0);
                     } else {
-                        //Agent is already moving 
-                        nextLocation = path[0];
-                        path.RemoveAt(0);
-                        if (path.Count == 0 && nextLocation != home) {
-                            //If at the final stage of journey not to home, set next journey to return home
-                            path = Pathfinding.FindPath(tile, home);
+                        //Agent is already moving
+                        for (int i = 0; i < speed; i++) {
+                            nextLocation = path[0];
+                            path.RemoveAt(0);
+                            if (path.Count == 0 ) {
+                                //At destination
+                                if (nextLocation != home) {
+                                    //If the destination is not home, set next journey to return home
+                                    path = Pathfinding.FindPath(tile, home);
+                                    Gather(nextLocation, path.Count);
+                                } else {
+                                    //Destination is home
+                                }
+                                break;
+                            }
                         }
+
+                        
                     }
                 }
                 break;
@@ -196,8 +210,12 @@ public class Agent {
         }
     }
 
-    private void Gather () {
-        SugarStore += tile.Gather();
+    private void Gather (Tile nextLocation, int pathLength) {
+        //Calculates the sugar the agent needs to collect to survive + sugar taken due to greed
+        int sugarToTake = Mathf.CeilToInt((metabolism * (pathLength + 2) * 2 * (1 + greed)));
+        int gathered = nextLocation.Gather(sugarToTake);
+        SugarStore += gathered;
+
     }
 
     /// <summary>
