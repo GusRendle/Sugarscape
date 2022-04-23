@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 
 public class Simulation {
 
@@ -35,6 +36,17 @@ public class Simulation {
     public static Sugarscape sugarscape;
     public static List<Agent> agents;
 
+    //Stats
+    public static string stepsStats;
+    public static string agentStats;
+    public static string wealthStats;
+    public static string incomeStats;
+    public static string metabStats;
+
+    private static List<int> agentWealth = new List<int>();
+    private static List<int> agentIncome = new List<int>();
+    private static List<int> agentMetab = new List<int>();
+
     /// <summary>
     /// Initialises / resets the simulation
     /// </summary>
@@ -55,11 +67,30 @@ public class Simulation {
             //All agents are dead
             return false;
         }
+        //Reset Stat Lists
+        agentWealth.Clear();
+        agentIncome.Clear();
+        agentMetab.Clear();
+
+
         //Randomly goes calls for each agent to handle the step
         foreach ( Agent agent in Main.Shuffle(liveAgents)) {
+            agentWealth.Add(agent.wealth);
+            agentIncome.Add(agent.income);
+            agentMetab.Add(agent.metabolism);
             agent.Step();
         } 
         sugarscape.Step();
+
+        //Update Stats
+        if (CurrentStep % 10 == 0) {
+            stepsStats += "\nStep " + CurrentStep.ToString();
+            agentStats += "\n" + liveAgents.Count;
+            wealthStats += "\n" + agentWealth.Average().ToString("0.000");
+            incomeStats += "\n" + agentIncome.Average().ToString("0.000");
+            metabStats += "\n" + agentMetab.Average().ToString("0.000");
+        }
+
         CurrentStep++;
         return true;
     }

@@ -5,12 +5,18 @@ using UnityEngine.UI;
 public class UI : MonoBehaviour {
 
     public Text generateBtn;
-    public Text playBtn;
+    public Text runBtn;
 
     public Text viewDesc;
     public Text regrowthRate;
     public Text speed;
     public Text step;
+
+    public Text statsStep;
+    public Text statsAgent;
+    public Text statsWealth;
+    public Text statsIncome;
+    public Text statsMetab;
 
     public InputField maxWealthField;
     public InputField minWealthField;
@@ -37,10 +43,15 @@ public class UI : MonoBehaviour {
         regrowthRate.text = Simulation.growbackRate.ToString();
         speed.text = Main.stepsPerSecond.ToString();
         step.text = "Step: " + Simulation.CurrentStep.ToString();
+        statsStep.text = Simulation.stepsStats;
+        statsAgent.text = Simulation.agentStats;
+        statsWealth.text = Simulation.wealthStats;
+        statsIncome.text = Simulation.incomeStats;
+        statsMetab.text = Simulation.metabStats;
         //If the simulation is complete (all agents dead), alter run btn
         if ( Main.isComplete ) {
-            playBtn.transform.parent.GetComponent<Button>().interactable = false;
-            playBtn.text = "Done!";
+            runBtn.transform.parent.GetComponent<Button>().interactable = false;
+            runBtn.text = "Done!";
         }
     }
 
@@ -156,8 +167,8 @@ public class UI : MonoBehaviour {
     /// </summary>
     public void GenBtnClicked () {
         generateBtn.text = "Generate";
-        playBtn.transform.parent.GetComponent<Button>().interactable = true;
-        playBtn.text = "Play";
+        runBtn.transform.parent.GetComponent<Button>().interactable = true;
+        runBtn.text = "Play";
         Main.isPaused = true;
         Main.isComplete = false;
         Simulation.Initialise();
@@ -170,13 +181,13 @@ public class UI : MonoBehaviour {
         generateBtn.text = "Reset";
         if ( Main.isPaused ) {
             Main.isPaused = false;
-            playBtn.text = "Pause";
+            runBtn.text = "Pause";
             Main.cumDeltaTime = 0;
             Simulation.Step();
             Simulation.Render();
         } else {
             Main.isPaused = true;
-            playBtn.text = "Play";
+            runBtn.text = "Play";
         }
     }
 

@@ -26,8 +26,8 @@ public class Agent {
     private List<Tile> path;
     private readonly Tile home;
 
-    private readonly int income;
-    private int wealth;
+    public readonly int income;
+    public int wealth { get; private set; }
     private readonly int speed =1;
     private readonly float greed = 0.1f;
 
