@@ -24,9 +24,17 @@ public class Simulation {
         public static int min = 1;
         public static int max = 4;
     }
+    public static class AgentSpeed {
+        public static int min = 1;
+        public static int max = 3;
+    }
     public static class Lifespan {
         public static int min = 60;
         public static int max = 100;
+    }
+    public static class Greed {
+        public static float min = 0f;
+        public static float max = 0.5f;
     }
     
     public static MovementStyle movementStyle = MovementStyle.CLASSIC;
@@ -39,11 +47,11 @@ public class Simulation {
     //Stats
     public static string stepsStats;
     public static string agentStats;
-    public static string wealthStats;
+    public static string greedStats;
     public static string incomeStats;
     public static string metabStats;
 
-    private static List<int> agentWealth = new List<int>();
+    private static List<float> agentGreed = new List<float>();
     private static List<int> agentIncome = new List<int>();
     private static List<int> agentMetab = new List<int>();
 
@@ -68,14 +76,14 @@ public class Simulation {
             return false;
         }
         //Reset Stat Lists
-        agentWealth.Clear();
+        agentGreed.Clear();
         agentIncome.Clear();
         agentMetab.Clear();
 
 
         //Randomly goes calls for each agent to handle the step
         foreach ( Agent agent in Main.Shuffle(liveAgents)) {
-            agentWealth.Add(agent.wealth);
+            agentGreed.Add(agent.greed);
             agentIncome.Add(agent.income);
             agentMetab.Add(agent.metabolism);
             agent.Step();
@@ -86,7 +94,7 @@ public class Simulation {
         if (CurrentStep % 10 == 0) {
             stepsStats += "\nStep " + CurrentStep.ToString();
             agentStats += "\n" + liveAgents.Count;
-            wealthStats += "\n" + agentWealth.Average().ToString("0.000");
+            greedStats += "\n" + agentGreed.Average().ToString("0.000");
             incomeStats += "\n" + agentIncome.Average().ToString("0.000");
             metabStats += "\n" + agentMetab.Average().ToString("0.000");
         }

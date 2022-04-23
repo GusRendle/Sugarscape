@@ -28,8 +28,8 @@ public class Agent {
 
     public readonly int income;
     public int wealth { get; private set; }
-    private readonly int speed =1;
-    private readonly float greed = 0.1f;
+    public readonly int speed;
+    public readonly float greed = 0.1f;
 
     /// <summary>
     /// Default agent constructor
@@ -39,6 +39,9 @@ public class Agent {
         Random.Range(Simulation.Wealth.min, Simulation.Wealth.max + 1),
         Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
         Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1),
+        Random.Range(Simulation.AgentSpeed.min, Simulation.AgentSpeed.max + 1),
+        //Range is inclusive for floats
+        Random.Range(Simulation.Greed.min, Simulation.Greed.max),
         tile
     ) { }
 
@@ -48,7 +51,7 @@ public class Agent {
     /// <param name="income">Income of the agent</param>
     /// <param name="vision">Vision of the agent</param>
     /// <param name="metabolism">Metabolism of the agent</param>
-    public Agent (int income, int vision, int metabolism, Tile home) {
+    public Agent (int income, int vision, int metabolism, int speed, float greed, Tile home) {
         this.income = income;
         this.vision = vision;
         this.metabolism = metabolism;
@@ -57,6 +60,8 @@ public class Agent {
         id = staticId++;
         SugarStore = metabolism * 20;
         wealth = income * 5;
+        this.speed = speed;
+        this.greed = greed;
         InitialiseAgent();
     }
 

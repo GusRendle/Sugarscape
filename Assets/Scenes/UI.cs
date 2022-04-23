@@ -14,7 +14,7 @@ public class UI : MonoBehaviour {
 
     public Text statsStep;
     public Text statsAgent;
-    public Text statsWealth;
+    public Text statsGreed;
     public Text statsIncome;
     public Text statsMetab;
 
@@ -25,6 +25,10 @@ public class UI : MonoBehaviour {
     public InputField numberField;
     public InputField maxVisionField;
     public InputField minVisionField;
+    public InputField maxAgentSpeedField;
+    public InputField minAgentSpeedField;
+    public InputField maxGreedField;
+    public InputField minGreedField;
 
     //Posible views for the simulation
     public enum ViewOptions {
@@ -45,7 +49,7 @@ public class UI : MonoBehaviour {
         step.text = "Step: " + Simulation.CurrentStep.ToString();
         statsStep.text = Simulation.stepsStats;
         statsAgent.text = Simulation.agentStats;
-        statsWealth.text = Simulation.wealthStats;
+        statsGreed.text = Simulation.greedStats;
         statsIncome.text = Simulation.incomeStats;
         statsMetab.text = Simulation.metabStats;
         //If the simulation is complete (all agents dead), alter run btn
@@ -243,6 +247,10 @@ public class UI : MonoBehaviour {
             maxVisionField.text = "49";
             Simulation.Vision.min = 49;
             minVisionField.text ="49";
+            Simulation.Wealth.max = 6;
+            maxWealthField.text = "6";
+            Simulation.Wealth.min = 1;
+            minWealthField.text ="1";
 
         }
     }
@@ -250,7 +258,7 @@ public class UI : MonoBehaviour {
     /// <summary>
     /// Runs when the user enters a value for the amount of agents
     /// </summary>
-    /// <param name="agentCount"></param>
+    /// <param name="agentCount">The value in the input field</param>
     public void AgentCountUnfocused (string agentCount) {
         if ( agentCount.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(agentCount), 0, 1000);
@@ -265,7 +273,7 @@ public class UI : MonoBehaviour {
     /// <summary>
     /// Runs when the user enters a value for the max vision of agents
     /// </summary>
-    /// <param name="maxVision"></param>
+    /// <param name="maxVision">The value in the input field</param>
     public void MaxVisionUnfocused (string maxVision) {
         if ( maxVision.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(maxVision), Simulation.Vision.min, 50);
@@ -281,7 +289,7 @@ public class UI : MonoBehaviour {
     /// <summary>
     /// Runs when the user enters a value for the min vision of agents
     /// </summary>
-    /// <param name="minVision"></param>
+    /// <param name="minVision">The value in the input field</param>
     public void MinVisionUnfocused (string minVision) {
         if ( minVision.Length > 0 ) {
             int num = Mathf.Clamp(int.Parse(minVision), 0, Simulation.Vision.max);
@@ -290,6 +298,68 @@ public class UI : MonoBehaviour {
         } else {
             Simulation.Vision.min = 0;
             minVisionField.text = "0";
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user enters a value for the max speed of agents
+    /// </summary>
+    /// <param name="maxAgentSpeed">The value in the input field</param>
+    public void MaxAgentSpeedUnfocused (string maxAgentSpeed) {
+        if ( maxAgentSpeed.Length > 0 ) {
+            int num = Mathf.Clamp(int.Parse(maxAgentSpeed), Simulation.AgentSpeed.min, 10);
+            Simulation.AgentSpeed.max = num;
+            maxAgentSpeedField.text = num.ToString();
+        } else {
+            int num = Simulation.AgentSpeed.min;
+            Simulation.AgentSpeed.max = num;
+            maxAgentSpeedField.text = num.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user enters a value for the min speed of agents
+    /// </summary>
+    /// <param name="minAgentSpeed">The value in the input field</param>
+    public void MinAgentSpeedUnfocused (string minAgentSpeed) {
+        if ( minAgentSpeed.Length > 0 ) {
+            int num = Mathf.Clamp(int.Parse(minAgentSpeed), 0, Simulation.AgentSpeed.max);
+            Simulation.AgentSpeed.min = num;
+            minAgentSpeedField.text = num.ToString();
+        } else {
+            Simulation.AgentSpeed.min = 0;
+            minAgentSpeedField.text = "0";
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user enters a value for the max speed of agents
+    /// </summary>
+    /// <param name="maxGreed">The value in the input field</param>
+    public void MaxGreedUnfocused (string maxGreed) {
+        if ( maxGreed.Length > 0 ) {
+            float num = Mathf.Clamp(float.Parse(maxGreed), Simulation.Greed.min, 2f);
+            Simulation.Greed.max = num;
+            maxGreedField.text = num.ToString();
+        } else {
+            float num = Simulation.Greed.min;
+            Simulation.Greed.max = num;
+            maxGreedField.text = num.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user enters a value for the min speed of agents
+    /// </summary>
+    /// <param name="minGreed">The value in the input field</param>
+    public void MinGreedUnfocused (string minGreed) {
+        if ( minGreed.Length > 0 ) {
+            float num = Mathf.Clamp(float.Parse(minGreed), 0f, Simulation.Greed.max);
+            Simulation.Greed.min = num;
+            minGreedField.text = num.ToString();
+        } else {
+            Simulation.Greed.min = 0;
+            minGreedField.text = "0";
         }
     }
 
