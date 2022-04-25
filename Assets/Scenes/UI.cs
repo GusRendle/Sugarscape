@@ -1,6 +1,11 @@
 ﻿
 using UnityEngine;
 using UnityEngine.UI;
+using System.Text;
+using System.IO;
+using System;
+using UnityEditor;
+using System.Collections.Generic;
 
 public class UI : MonoBehaviour {
 
@@ -41,6 +46,8 @@ public class UI : MonoBehaviour {
     //Current view
     public static ViewOptions currentView = ViewOptions.DEFAULT;
 
+    private static List<StepStat> multiRunList = new List<StepStat>();
+
     // Update is called once per frame
     void Update() {
         //Update labels with new information
@@ -48,7 +55,7 @@ public class UI : MonoBehaviour {
         speed.text = Main.stepsPerSecond.ToString();
         step.text = "Step: " + Simulation.CurrentStep.ToString();
         statsStep.text = Simulation.stepsStats;
-        statsAgent.text = Simulation.agentStats;
+        statsAgent.text = Simulation.agentCountStats;
         statsGreed.text = Simulation.greedStats;
         statsIncome.text = Simulation.incomeStats;
         statsMetab.text = Simulation.metabStats;
@@ -57,6 +64,116 @@ public class UI : MonoBehaviour {
             runBtn.transform.parent.GetComponent<Button>().interactable = false;
             runBtn.text = "Done!";
         }
+        //If a MultiRun step is complete
+        if (Simulation.agentStats.endStepStat != null) {
+            multiRunList.Add(Simulation.agentStats.startStepStat);
+            multiRunList.Add(Simulation.agentStats.stableStepStat);
+            multiRunList.Add(Simulation.agentStats.dropStepStat);
+            multiRunList.Add(Simulation.agentStats.endStepStat);
+            GenBtnClicked();
+            MultiRunBtnClicked();
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the generate button
+    /// </summary>
+    public void GenBtnClicked () {
+        generateBtn.text = "Generate";
+        runBtn.transform.parent.GetComponent<Button>().interactable = true;
+        runBtn.text = "Play";
+        Main.isPaused = true;
+        Main.isComplete = false;
+        GenerateCSV(Simulation.stepStatList, "");
+        Simulation.Initialise();
+    }
+
+    public void GenerateCSV(List<StepStat> list, string filePrefix) {
+        var sb = new StringBuilder("Step, Agent Count, Avg Wealth, Avg Income, Avg Vision, Avg Metab, Avg Speed, Avg Path, Avg Greed");
+            foreach (var stepStat in list) {
+                sb.Append('\n').Append(stepStat.Step.ToString()).Append(',').Append(stepStat.AgentCount.ToString()).Append(',')
+                .Append(stepStat.AvgWealth.ToString()).Append(',').Append(stepStat.AvgIncome.ToString()).Append(',')
+                .Append(stepStat.AvgVision.ToString()).Append(',').Append(stepStat.AvgMetab.ToString()).Append(',')
+                .Append(stepStat.AvgSpeed.ToString()).Append(',').Append(stepStat.AvgPath.ToString()).Append(',')
+                .Append(stepStat.AvgGreed.ToString());
+            }
+
+            var folder = Application.streamingAssetsPath;
+            if(!Directory.Exists(folder)) { Directory.CreateDirectory(folder); };
+            var filePath = Path.Combine(folder, filePrefix + DateTime.Now.ToString("HH mm ss") + ".csv");
+
+            using var writer = new StreamWriter(filePath, false);
+            writer.Write(sb.ToString());
+            AssetDatabase.Refresh();
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the run button
+    /// </summary>
+    public void RunBtnClicked () {
+        generateBtn.text = "Reset";
+        if ( Main.isPaused ) {
+            Main.isPaused = false;
+            runBtn.text = "Pause";
+            Main.cumDeltaTime = 0;
+            Simulation.MultiRun = false;
+            Simulation.Step();
+            Simulation.Render();
+        } else {
+            Main.isPaused = true;
+            runBtn.text = "Play";
+        }
+    }
+
+    public void MultiRunBtnClicked () {
+        generateBtn.text = "Reset";
+        if ( Main.isPaused ) {
+            Main.isPaused = false;
+            runBtn.text = "Pause";
+            Main.cumDeltaTime = 0;
+            Simulation.MultiRun = true;
+            Simulation.Step();
+            Simulation.Render();
+        } else {
+            Main.isPaused = true;
+            GenerateCSV(multiRunList, "MultiRun");
+            multiRunList.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the increase growth button
+    /// </summary>
+    public void GrowthIncBtnClicked () {
+        Simulation.growbackRate = Mathf.Clamp(++Simulation.growbackRate, 0, 4);
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the decrease growth button
+    /// </summary>
+    public void GrowthDecBtnClicked () {
+        Simulation.growbackRate = Mathf.Clamp(--Simulation.growbackRate, 0, 4);
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the increase speed button
+    /// </summary>
+    public void SpeedIncBtnClicked () {
+        Main.stepsPerSecond = Mathf.Clamp(++Main.stepsPerSecond, 1, 200);
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the decrease speed button
+    /// </summary>
+    public void SpeedDecBtnClicked () {
+        Main.stepsPerSecond = Mathf.Clamp(--Main.stepsPerSecond, 1, 200);
+    }
+
+    /// <summary>
+    /// Runs when the user clicks the decrease speed button
+    /// </summary>
+    public void RegrowthDropBtnClicked () {
+        Simulation.growbackRate -= Simulation.growbackRate / 2;
     }
 
     /// <summary>
@@ -139,63 +256,6 @@ public class UI : MonoBehaviour {
     }
 
     /// <summary>
-    /// Runs when the user clicks the increase growth button
-    /// </summary>
-    public void GrowthIncBtnClicked () {
-        Simulation.growbackRate = Mathf.Clamp(++Simulation.growbackRate, 0, 4);
-    }
-
-    /// <summary>
-    /// Runs when the user clicks the decrease growth button
-    /// </summary>
-    public void GrowthDecBtnClicked () {
-        Simulation.growbackRate = Mathf.Clamp(--Simulation.growbackRate, 0, 4);
-    }
-
-    /// <summary>
-    /// Runs when the user clicks the increase speed button
-    /// </summary>
-    public void SpeedIncBtnClicked () {
-        Main.stepsPerSecond = Mathf.Clamp(++Main.stepsPerSecond, 1, 30);
-    }
-
-    /// <summary>
-    /// Runs when the user clicks the decrease speed button
-    /// </summary>
-    public void SpeedDecBtnClicked () {
-        Main.stepsPerSecond = Mathf.Clamp(--Main.stepsPerSecond, 1, 30);
-    }
-
-    /// <summary>
-    /// Runs when the user clicks the generate button
-    /// </summary>
-    public void GenBtnClicked () {
-        generateBtn.text = "Generate";
-        runBtn.transform.parent.GetComponent<Button>().interactable = true;
-        runBtn.text = "Play";
-        Main.isPaused = true;
-        Main.isComplete = false;
-        Simulation.Initialise();
-    }
-
-    /// <summary>
-    /// Runs when the user clicks the run button
-    /// </summary>
-    public void RunBtnClicked () {
-        generateBtn.text = "Reset";
-        if ( Main.isPaused ) {
-            Main.isPaused = false;
-            runBtn.text = "Pause";
-            Main.cumDeltaTime = 0;
-            Simulation.Step();
-            Simulation.Render();
-        } else {
-            Main.isPaused = true;
-            runBtn.text = "Play";
-        }
-    }
-
-    /// <summary>
     /// Runs when the user enters a value for max metabolism
     /// </summary>
     /// <param name="maxMetabolism">The max metabolism</param>
@@ -251,6 +311,12 @@ public class UI : MonoBehaviour {
             maxWealthField.text = "6";
             Simulation.Wealth.min = 1;
             minWealthField.text ="1";
+            Simulation.Wealth.max = 6;
+            maxWealthField.text = "6";
+            Simulation.Wealth.min = 1;
+            minWealthField.text ="1";
+
+            Simulation.growbackRate = 49;
 
         }
     }

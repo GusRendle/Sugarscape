@@ -25,6 +25,7 @@ public class Agent {
     //Pathfinding
     private List<Tile> path;
     private readonly Tile home;
+    public int lastPathLength = 15;
 
     public readonly int income;
     public int wealth { get; private set; }
@@ -70,7 +71,7 @@ public class Agent {
     /// </summary>
     public void Step () {
         wealth += income;
-        Move();
+        CheckSugar();
         Eat();
         if ( SugarStore < 0 ) {
             Die();
@@ -143,6 +144,13 @@ public class Agent {
         return min + (max - min) / 3f * 2;
     }
 
+    private void CheckSugar () {
+        bool isSugarLow = SugarStore < Mathf.CeilToInt(metabolism * lastPathLength * 4 * (1 + greed));
+        if (!(Simulation.movementStyle == Simulation.MovementStyle.CUSTOM && (path == null || path.Count == 0) && !isSugarLow)) {
+            Move();
+        }
+    }
+
     private void Move () {
         //The location the agent will move to next
         Tile nextLocation = null;
@@ -194,7 +202,8 @@ public class Agent {
                                 if (nextLocation != home) {
                                     //If the destination is not home, set next journey to return home
                                     path = Pathfinding.FindPath(tile, home);
-                                    Gather(nextLocation, path.Count);
+                                    lastPathLength = path.Count +2;
+                                    Gather(nextLocation);
                                 } else {
                                     //Destination is home
                                 }
@@ -215,9 +224,9 @@ public class Agent {
         }
     }
 
-    private void Gather (Tile nextLocation, int pathLength) {
+    private void Gather (Tile nextLocation) {
         //Calculates the sugar the agent needs to collect to survive + sugar taken due to greed
-        int sugarToTake = Mathf.CeilToInt((metabolism * (pathLength + 2) * 2 * (1 + greed)));
+        int sugarToTake = Mathf.CeilToInt((metabolism * (lastPathLength) * 2 * (1 + greed)));
         int gathered = nextLocation.Gather(sugarToTake);
         SugarStore += gathered;
 

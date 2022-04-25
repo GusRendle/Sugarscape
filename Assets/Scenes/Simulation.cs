@@ -38,28 +38,32 @@ public class Simulation {
     }
     
     public static MovementStyle movementStyle = MovementStyle.CLASSIC;
+    public static bool MultiRun = false;
 
     public static int CurrentStep { get; private set; } = 0;
+
+    public static List<Agent> liveAgents;
 
     public static Sugarscape sugarscape;
     public static List<Agent> agents;
 
     //Stats
+    public static List<StepStat> stepStatList = new List<StepStat>();
+    public static AgentStats agentStats;
+    //UI Stats
     public static string stepsStats;
-    public static string agentStats;
+    public static string agentCountStats;
     public static string greedStats;
     public static string incomeStats;
     public static string metabStats;
-
-    private static List<float> agentGreed = new List<float>();
-    private static List<int> agentIncome = new List<int>();
-    private static List<int> agentMetab = new List<int>();
 
     /// <summary>
     /// Initialises / resets the simulation
     /// </summary>
     public static void Initialise () {
         CurrentStep = 0;
+        stepStatList.Clear();
+        agentStats = new AgentStats();
         InitialiseSugarscape();
         InitialiseAgents();
         Render();
@@ -70,22 +74,20 @@ public class Simulation {
     /// </summary>
     /// <returns>False if the simulation has finished</returns>
     public static bool Step () {
-        List<Agent> liveAgents = agents.FindAll(x => x.IsAlive);
+        liveAgents = agents.FindAll(x => x.IsAlive);
         if ( liveAgents.Count == 0 ) {
             //All agents are dead
             return false;
         }
         //Reset Stat Lists
-        agentGreed.Clear();
-        agentIncome.Clear();
-        agentMetab.Clear();
+        agentStats.agentGreed.Clear();
+        agentStats.agentIncome.Clear();
+        agentStats.agentMetab.Clear();
 
 
         //Randomly goes calls for each agent to handle the step
         foreach ( Agent agent in Main.Shuffle(liveAgents)) {
-            agentGreed.Add(agent.greed);
-            agentIncome.Add(agent.income);
-            agentMetab.Add(agent.metabolism);
+            agentStats.ImportAgentData(agent);
             agent.Step();
         } 
         sugarscape.Step();
@@ -93,14 +95,35 @@ public class Simulation {
         //Update Stats
         if (CurrentStep % 10 == 0) {
             stepsStats += "\nStep " + CurrentStep.ToString();
-            agentStats += "\n" + liveAgents.Count;
-            greedStats += "\n" + agentGreed.Average().ToString("0.000");
-            incomeStats += "\n" + agentIncome.Average().ToString("0.000");
-            metabStats += "\n" + agentMetab.Average().ToString("0.000");
+            agentCountStats += "\n" + liveAgents.Count;
+            greedStats += "\n" + agentStats.agentGreed.Average().ToString("0.000");
+            incomeStats += "\n" + agentStats.agentIncome.Average().ToString("0.000");
+            metabStats += "\n" + agentStats.agentMetab.Average().ToString("0.000");
         }
 
+        if (MultiRun) {
+            if (Simulation.CurrentStep == 0) {
+                agentStats.startStepStat = GenerateStepStat();
+                growbackRate = 43;
+            }  else if (Simulation.CurrentStep == 300) {
+                agentStats.stableStepStat = GenerateStepStat();
+                growbackRate = 22;
+            } else if (Simulation.CurrentStep == 600) {
+                agentStats.dropStepStat = GenerateStepStat();
+            } else if (Simulation.CurrentStep == 900) {
+                agentStats.endStepStat = GenerateStepStat();
+            }
+        }
+
+        stepStatList.Add(GenerateStepStat());
         CurrentStep++;
         return true;
+    }
+
+    private static StepStat GenerateStepStat() {
+        return new StepStat(CurrentStep, liveAgents.Count, (float) agentStats.agentWealth.Average(), (float) agentStats.agentIncome.Average(),
+            (float) agentStats.agentVision.Average(), (float) agentStats.agentMetab.Average(), (float) agentStats.agentSpeed.Average(), 
+            (float) agentStats.agentPathLength.Average(), (float) agentStats.agentGreed.Average());
     }
 
     /// <summary>
