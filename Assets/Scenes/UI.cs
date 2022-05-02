@@ -17,7 +17,7 @@ public class UI : MonoBehaviour {
     public Text speed;
     public Text step;
 
-    public Text statsStep;
+    public Text stepCountStats;
     public Text statsAgent;
     public Text statsGreed;
     public Text statsIncome;
@@ -46,7 +46,8 @@ public class UI : MonoBehaviour {
     //Current view
     public static ViewOptions currentView = ViewOptions.DEFAULT;
 
-    private static List<StepStat> multiRunList = new List<StepStat>();
+    private static List<StepStats> multiRunList = new List<StepStats>();
+    public static int MultiRunCount = 0;
 
     // Update is called once per frame
     void Update() {
@@ -54,7 +55,7 @@ public class UI : MonoBehaviour {
         regrowthRate.text = Simulation.growbackRate.ToString();
         speed.text = Main.stepsPerSecond.ToString();
         step.text = "Step: " + Simulation.CurrentStep.ToString();
-        statsStep.text = Simulation.stepsStats;
+        stepCountStats.text = Simulation.stepCountStats;
         statsAgent.text = Simulation.agentCountStats;
         statsGreed.text = Simulation.greedStats;
         statsIncome.text = Simulation.incomeStats;
@@ -65,13 +66,22 @@ public class UI : MonoBehaviour {
             runBtn.text = "Done!";
         }
         //If a MultiRun step is complete
-        if (Simulation.agentStats.endStepStat != null) {
-            multiRunList.Add(Simulation.agentStats.startStepStat);
-            multiRunList.Add(Simulation.agentStats.stableStepStat);
-            multiRunList.Add(Simulation.agentStats.dropStepStat);
-            multiRunList.Add(Simulation.agentStats.endStepStat);
-            GenBtnClicked();
-            MultiRunBtnClicked();
+        if (Simulation.MultiRun && Simulation.stepsStats.Count > 600) {
+            multiRunList.Add(Simulation.stepsStats[0]);
+            multiRunList.Add(Simulation.stepsStats[300]);
+            multiRunList.Add(Simulation.stepsStats[600]);
+            //multiRunList.Add(Simulation.stepsStats[900]);
+            MultiRunCount++;
+            Main.isPaused = true;
+            Main.isComplete = false;
+            Simulation.Initialise();
+            Main.isPaused = false;
+            Main.cumDeltaTime = 0;
+            Simulation.Step();
+            Simulation.Render();
+            if (MultiRunCount == 255) {
+                MultiRunBtnClicked();
+            }
         }
     }
 
@@ -84,18 +94,19 @@ public class UI : MonoBehaviour {
         runBtn.text = "Play";
         Main.isPaused = true;
         Main.isComplete = false;
-        GenerateCSV(Simulation.stepStatList, "");
+        Simulation.MultiRun = false;
+        //GenerateCSV(Simulation.stepsStats, "");
         Simulation.Initialise();
     }
 
-    public void GenerateCSV(List<StepStat> list, string filePrefix) {
+    public void GenerateCSV(List<StepStats> list, string filePrefix) {
         var sb = new StringBuilder("Step, Agent Count, Avg Wealth, Avg Income, Avg Vision, Avg Metab, Avg Speed, Avg Path, Avg Greed");
-            foreach (var stepStat in list) {
-                sb.Append('\n').Append(stepStat.Step.ToString()).Append(',').Append(stepStat.AgentCount.ToString()).Append(',')
-                .Append(stepStat.AvgWealth.ToString()).Append(',').Append(stepStat.AvgIncome.ToString()).Append(',')
-                .Append(stepStat.AvgVision.ToString()).Append(',').Append(stepStat.AvgMetab.ToString()).Append(',')
-                .Append(stepStat.AvgSpeed.ToString()).Append(',').Append(stepStat.AvgPath.ToString()).Append(',')
-                .Append(stepStat.AvgGreed.ToString());
+            foreach (var stepStats in list) {
+                sb.Append('\n').Append(stepStats.Step.ToString()).Append(',').Append(stepStats.AgentCount.ToString()).Append(',')
+                .Append(stepStats.AvgWealth.ToString()).Append(',').Append(stepStats.AvgIncome.ToString()).Append(',')
+                .Append(stepStats.AvgVision.ToString()).Append(',').Append(stepStats.AvgMetab.ToString()).Append(',')
+                .Append(stepStats.AvgSpeed.ToString()).Append(',').Append(stepStats.AvgPath.ToString()).Append(',')
+                .Append(stepStats.AvgGreed.ToString());
             }
 
             var folder = Application.streamingAssetsPath;
@@ -116,7 +127,6 @@ public class UI : MonoBehaviour {
             Main.isPaused = false;
             runBtn.text = "Pause";
             Main.cumDeltaTime = 0;
-            Simulation.MultiRun = false;
             Simulation.Step();
             Simulation.Render();
         } else {
@@ -138,6 +148,7 @@ public class UI : MonoBehaviour {
             Main.isPaused = true;
             GenerateCSV(multiRunList, "MultiRun");
             multiRunList.Clear();
+            MultiRunCount = 0;
         }
     }
 
@@ -155,25 +166,29 @@ public class UI : MonoBehaviour {
         Simulation.growbackRate = Mathf.Clamp(--Simulation.growbackRate, 0, 4);
     }
 
+    public void MaxSpeedBtnClicked () {
+        Main.stepsPerSecond = 250;
+    }
+
     /// <summary>
     /// Runs when the user clicks the increase speed button
     /// </summary>
     public void SpeedIncBtnClicked () {
-        Main.stepsPerSecond = Mathf.Clamp(++Main.stepsPerSecond, 1, 200);
+        Main.stepsPerSecond = Mathf.Clamp(++Main.stepsPerSecond, 1, 250);
     }
 
     /// <summary>
     /// Runs when the user clicks the decrease speed button
     /// </summary>
     public void SpeedDecBtnClicked () {
-        Main.stepsPerSecond = Mathf.Clamp(--Main.stepsPerSecond, 1, 200);
+        Main.stepsPerSecond = Mathf.Clamp(--Main.stepsPerSecond, 1, 250);
     }
 
     /// <summary>
     /// Runs when the user clicks the decrease speed button
     /// </summary>
     public void RegrowthDropBtnClicked () {
-        Simulation.growbackRate -= Simulation.growbackRate / 2;
+        Simulation.growbackRate = 22;
     }
 
     /// <summary>
@@ -307,16 +322,23 @@ public class UI : MonoBehaviour {
             maxVisionField.text = "49";
             Simulation.Vision.min = 49;
             minVisionField.text ="49";
-            Simulation.Wealth.max = 6;
-            maxWealthField.text = "6";
+            Simulation.Wealth.max = 8;
+            maxWealthField.text = "8";
             Simulation.Wealth.min = 1;
             minWealthField.text ="1";
-            Simulation.Wealth.max = 6;
-            maxWealthField.text = "6";
-            Simulation.Wealth.min = 1;
-            minWealthField.text ="1";
+            Simulation.Greed.max = 1;
+            maxGreedField.text = "1";
+            Simulation.Greed.min = 0;
+            minGreedField.text ="0";
+            Simulation.Greed.min = 0;
+            minGreedField.text ="0";
+            Simulation.AgentSpeed.min = 2;
+            minAgentSpeedField.text = "2";
 
-            Simulation.growbackRate = 49;
+            Simulation.initialAgentCount = 600;
+            numberField.text = "600";
+
+            Simulation.growbackRate = 61;
 
         }
     }
@@ -327,7 +349,7 @@ public class UI : MonoBehaviour {
     /// <param name="agentCount">The value in the input field</param>
     public void AgentCountUnfocused (string agentCount) {
         if ( agentCount.Length > 0 ) {
-            int num = Mathf.Clamp(int.Parse(agentCount), 0, 1000);
+            int num = Mathf.Clamp(int.Parse(agentCount), 0, 2500);
             Simulation.initialAgentCount = num;
             numberField.text = num.ToString();
         } else {

@@ -151,13 +151,81 @@ public static class Pathfinding {
     /// <returns>The closest tile containing sugar</returns>
     public static Tile FindClosestSugar(Tile startTile) {
         var sugarDistances = new List<KeyValuePair<int, Tile>>();
+
+        foreach (Tile sugarTile in Sugarscape.sugarscape)
+            {
+                if (sugarTile.Sugar > 0) {
+                    sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
+                }
+        
+            }
+
+        if (sugarDistances.Count == 0) {
+            sugarDistances.Add(new KeyValuePair<int, Tile>(1, startTile));
+        }
+
+        sugarDistances.Sort((x, y) => x.Key.CompareTo(y.Key));
+        return sugarDistances[0].Value;
+    }
+
+    public static Tile FindClosestSugar(Tile startTile, int sugarToTake) {
+        var sugarDistances = new List<KeyValuePair<int, Tile>>();
+
+        //Search staggered
+
         foreach (Tile sugarTile in Sugarscape.sugarscape)
         {
-            if (sugarTile.Sugar > 0) {
+            if (sugarTile.Sugar > sugarToTake) {
                 sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
             }
     
         }
+
+        if (sugarDistances.Count == 0) {
+            foreach (Tile sugarTile in Sugarscape.sugarscape)
+            {
+                if (sugarTile.Sugar > sugarToTake * 0.6) {
+                    sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
+                }
+        
+            }
+        }
+
+        if (sugarDistances.Count == 0) {
+            foreach (Tile sugarTile in Sugarscape.sugarscape)
+            {
+                if (sugarTile.Sugar > 0) {
+                    sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
+                }
+        
+            }
+        }
+
+        if (sugarDistances.Count == 0) {
+            sugarDistances.Add(new KeyValuePair<int, Tile>(1, startTile));
+        }
+        
+        sugarDistances.Sort((x, y) => x.Key.CompareTo(y.Key));
+        return sugarDistances[0].Value;
+    }
+
+    public static Tile FindClosestSugarDis(Tile startTile, Tile home) {
+        Tile midTile = Sugarscape.sugarscape[Mathf.FloorToInt((startTile.x + home.x)/2),Mathf.FloorToInt((startTile.y + home.y)/2)];
+
+        var sugarDistances = new List<KeyValuePair<int, Tile>>();
+
+        foreach (Tile sugarTile in Sugarscape.sugarscape)
+            {
+                if (sugarTile.Sugar > 0) {
+                    sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(midTile, sugarTile), sugarTile));
+                }
+        
+            }
+
+        if (sugarDistances.Count == 0) {
+            sugarDistances.Add(new KeyValuePair<int, Tile>(1, startTile));
+        }
+
         sugarDistances.Sort((x, y) => x.Key.CompareTo(y.Key));
         return sugarDistances[0].Value;
     }

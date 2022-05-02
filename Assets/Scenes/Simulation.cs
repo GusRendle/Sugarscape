@@ -1,6 +1,6 @@
-﻿
+﻿using System.Linq;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
 public class Simulation {
 
@@ -10,7 +10,7 @@ public class Simulation {
         CUSTOM
     }
 
-    public static int growbackRate = 43;
+    public static int growbackRate = 61;
     public static int initialAgentCount = 400;
     public static class Wealth {
         public static int min = 50;
@@ -26,11 +26,7 @@ public class Simulation {
     }
     public static class AgentSpeed {
         public static int min = 1;
-        public static int max = 3;
-    }
-    public static class Lifespan {
-        public static int min = 60;
-        public static int max = 100;
+        public static int max = 4;
     }
     public static class Greed {
         public static float min = 0f;
@@ -48,10 +44,10 @@ public class Simulation {
     public static List<Agent> agents;
 
     //Stats
-    public static List<StepStat> stepStatList = new List<StepStat>();
-    public static AgentStats agentStats;
+    public static List<StepStats> stepsStats = new List<StepStats>();
+    private static AgentsStats agentStats;
     //UI Stats
-    public static string stepsStats;
+    public static string stepCountStats;
     public static string agentCountStats;
     public static string greedStats;
     public static string incomeStats;
@@ -62,8 +58,14 @@ public class Simulation {
     /// </summary>
     public static void Initialise () {
         CurrentStep = 0;
-        stepStatList.Clear();
-        agentStats = new AgentStats();
+        stepsStats.Clear();
+        agentStats = new AgentsStats();
+        stepCountStats = "";
+        agentCountStats = "";
+        greedStats = "";
+        incomeStats = "";
+        metabStats = "";
+        growbackRate = Mathf.CeilToInt((float)(initialAgentCount * 2.925)/24);
         InitialiseSugarscape();
         InitialiseAgents();
         Render();
@@ -75,26 +77,56 @@ public class Simulation {
     /// <returns>False if the simulation has finished</returns>
     public static bool Step () {
         liveAgents = agents.FindAll(x => x.IsAlive);
-        if ( liveAgents.Count == 0 ) {
+        if ( liveAgents.Count == 0  ) {
             //All agents are dead
             return false;
         }
-        //Reset Stat Lists
-        agentStats.agentGreed.Clear();
-        agentStats.agentIncome.Clear();
-        agentStats.agentMetab.Clear();
 
+        //Reset Stat Lists
+        agentStats = new AgentsStats();
+
+        int one =0;
+            int tw =0;
+            int th =0;
+            int fo =0;
+            int fi =0;
+            int si =0;
 
         //Randomly goes calls for each agent to handle the step
         foreach ( Agent agent in Main.Shuffle(liveAgents)) {
             agentStats.ImportAgentData(agent);
             agent.Step();
+            switch (agent.speed)
+            {
+                case 1:
+                    one++;
+                    break;
+                case 2:
+                    tw++;
+                    break;
+                case 3:
+                    th++;
+                    break;
+                case 4:
+                    fo++;
+                    break;
+                case 5:
+                    fi++;
+                    break;
+                case 6:
+                    si++;
+                    break;
+            }
         } 
-        sugarscape.Step();
+        
+        if (CurrentStep < 601)
+        {
+            sugarscape.Step();
+        }
 
         //Update Stats
         if (CurrentStep % 10 == 0) {
-            stepsStats += "\nStep " + CurrentStep.ToString();
+            stepCountStats += "\nStep " + CurrentStep.ToString();
             agentCountStats += "\n" + liveAgents.Count;
             greedStats += "\n" + agentStats.agentGreed.Average().ToString("0.000");
             incomeStats += "\n" + agentStats.agentIncome.Average().ToString("0.000");
@@ -103,27 +135,51 @@ public class Simulation {
 
         if (MultiRun) {
             if (Simulation.CurrentStep == 0) {
-                agentStats.startStepStat = GenerateStepStat();
-                growbackRate = 43;
+                growbackRate = 74;
+                //growbackRate = Mathf.CeilToInt((float)(initialAgentCount * 2.925)/24);
             }  else if (Simulation.CurrentStep == 300) {
-                agentStats.stableStepStat = GenerateStepStat();
-                growbackRate = 22;
-            } else if (Simulation.CurrentStep == 600) {
-                agentStats.dropStepStat = GenerateStepStat();
-            } else if (Simulation.CurrentStep == 900) {
-                agentStats.endStepStat = GenerateStepStat();
-            }
+                growbackRate = 26;
+                //growbackRate = Mathf.CeilToInt((float)(0.5f * ((liveAgents.Count * 2.925)/24)));
+            }  
+            // else if (Simulation.CurrentStep == 899) {
+            //    foreach ( Agent agent in Main.Shuffle(liveAgents)) {
+            //         switch (agent.speed)
+            //         {
+            //             case 1:
+            //                 one++;
+            //                 break;
+            //             case 2:
+            //                 tw++;
+            //                 break;
+            //             case 3:
+            //                 th++;
+            //                 break;
+            //             case 4:
+            //                 fo++;
+            //                 break;
+            //             case 5:
+            //                 fi++;
+            //                 break;
+            //             case 6:
+            //                 si++;
+            //                 break;
+            //         }
+            //     }
+            //     float max = (float) liveAgents.Count;
+            //     string stat = "";
+            //     stat += (one/max).ToString() + "/n";
+            //     stat += (tw/max).ToString() + "/n";
+            //     stat += (th/max).ToString() + "/n";
+            //     stat += (fo/max).ToString() + "/n";
+            //     stat += (fi/max).ToString() + "/n";
+            //     stat += (si/max).ToString();
+            //     stat += "/n";
+            // }
         }
 
-        stepStatList.Add(GenerateStepStat());
+        stepsStats.Add(new StepStats(CurrentStep, agentStats));
         CurrentStep++;
         return true;
-    }
-
-    private static StepStat GenerateStepStat() {
-        return new StepStat(CurrentStep, liveAgents.Count, (float) agentStats.agentWealth.Average(), (float) agentStats.agentIncome.Average(),
-            (float) agentStats.agentVision.Average(), (float) agentStats.agentMetab.Average(), (float) agentStats.agentSpeed.Average(), 
-            (float) agentStats.agentPathLength.Average(), (float) agentStats.agentGreed.Average());
     }
 
     /// <summary>

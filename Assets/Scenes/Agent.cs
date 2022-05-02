@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections.Generic;
 using System.Linq;
 
@@ -39,10 +39,10 @@ public class Agent {
     public Agent (Tile tile) : this(
         Random.Range(Simulation.Wealth.min, Simulation.Wealth.max + 1),
         Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
-        Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1),
+        Main.IntDistrobutionRandom(0.12f, 0.33f, 0.33f, 0.05f, 0.06f, 0.11f),
         Random.Range(Simulation.AgentSpeed.min, Simulation.AgentSpeed.max + 1),
         //Range is inclusive for floats
-        Random.Range(Simulation.Greed.min, Simulation.Greed.max),
+        Main.GaussianRandom(Simulation.Greed.min, Simulation.Greed.max),
         tile
     ) { }
 
@@ -60,7 +60,7 @@ public class Agent {
         this.home = home;
         id = staticId++;
         SugarStore = metabolism * 20;
-        wealth = income * 5;
+        wealth = income * 25;
         this.speed = speed;
         this.greed = greed;
         InitialiseAgent();
@@ -145,7 +145,7 @@ public class Agent {
     }
 
     private void CheckSugar () {
-        bool isSugarLow = SugarStore < Mathf.CeilToInt(metabolism * lastPathLength * 4 * (1 + greed));
+        bool isSugarLow = SugarStore < Mathf.CeilToInt(metabolism * lastPathLength * 1.75f * (1 + greed));
         if (!(Simulation.movementStyle == Simulation.MovementStyle.CUSTOM && (path == null || path.Count == 0) && !isSugarLow)) {
             Move();
         }
@@ -189,9 +189,24 @@ public class Agent {
                 {
                     if (path == null || path.Count == 0) {
                         //Agent is searching for sugar
-                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile));
-                        nextLocation = path[0];
-                        path.RemoveAt(0);
+
+                        //Pre check
+
+                         //int sugarToTake = Mathf.CeilToInt(metabolism * lastPathLength);
+                         //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, sugarToTake));
+
+                        //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile));
+
+                        //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, (lastPathLength * 2) -1 ));
+
+                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, home));
+
+                        Move ();
+
+
+
+                        // nextLocation = path[0];
+                        // path.RemoveAt(0);
                     } else {
                         //Agent is already moving
                         for (int i = 0; i < speed; i++) {
@@ -202,8 +217,19 @@ public class Agent {
                                 if (nextLocation != home) {
                                     //If the destination is not home, set next journey to return home
                                     path = Pathfinding.FindPath(tile, home);
-                                    lastPathLength = path.Count +2;
+                                    lastPathLength = path.Count + 1;
                                     Gather(nextLocation);
+
+                                    //Post Check
+
+                                    // if (SugarStore < lastPathLength * metabolism) {
+                                    //     path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, Mathf.CeilToInt(metabolism * lastPathLength)));
+                                    // }
+
+                                    if (SugarStore < lastPathLength * metabolism) {
+                                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, home));
+                                    }
+
                                 } else {
                                     //Destination is home
                                 }
@@ -229,7 +255,6 @@ public class Agent {
         int sugarToTake = Mathf.CeilToInt((metabolism * (lastPathLength) * 2 * (1 + greed)));
         int gathered = nextLocation.Gather(sugarToTake);
         SugarStore += gathered;
-
     }
 
     /// <summary>
