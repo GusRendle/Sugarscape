@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
 public class AgentsStats {
-    public List<int> agentWealth = new List<int>();
-    public List<int> agentIncome = new List<int>();
+    public List<float> agentWealth = new List<float>();
+    public List<float> agentIncome = new List<float>();
     public List<int> agentVision = new List<int>();
     public List<int> agentMetab = new List<int>();
     public List<int> agentSpeed = new List<int>();

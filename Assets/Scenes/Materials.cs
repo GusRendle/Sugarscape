@@ -7,8 +7,8 @@ public class Materials {
     private static readonly Shader diffuseShader = Shader.Find("Legacy Shaders/Diffuse");
 
     //Materials for the sugarscape
-    public static readonly Material Background = new Material(diffuseShader) { color = Color.white };
-    public static readonly Material Sugar = new Material(diffuseShader) { color = Color.yellow };
+    public static readonly Material Background = new Material(diffuseShader) { color = new Color(1, 1, 0.52f ,1) };
+    public static readonly Material Sugar = new Material(diffuseShader) { color = new Color(1, 0.5f, 0.15f, 1) };
     public static readonly Material DefaultColour = new Material(diffuseShader) { color = Color.red };
 
     //Materials for the custom views

@@ -123,6 +123,20 @@ public static class Pathfinding {
     /// <returns>The distance between the 2 nodes</returns>
     private static int CalculateDistanceCost(Tile a, Tile b) {
         int xDistance = Mathf.Abs(a.x - b.x);
+        if (xDistance > 25) {
+            xDistance = 50 - xDistance;
+        }
+        int yDistance = Mathf.Abs(a.y - b.y);
+        if (yDistance > 25) {
+            yDistance = 50 - xDistance;
+        }
+        //int remaining = Mathf.Abs(xDistance - yDistance);
+        //return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
+        return xDistance * MOVE_STRAIGHT_COST + yDistance * MOVE_STRAIGHT_COST;
+    }
+
+    private static int OldCalculateDistanceCost(Tile a, Tile b) {
+        int xDistance = Mathf.Abs(a.x - b.x);
         int yDistance = Mathf.Abs(a.y - b.y);
         //int remaining = Mathf.Abs(xDistance - yDistance);
         //return MOVE_DIAGONAL_COST * Mathf.Min(xDistance, yDistance) + MOVE_STRAIGHT_COST * remaining;
@@ -149,13 +163,16 @@ public static class Pathfinding {
     /// </summary>
     /// <param name="startTile">The tile to start the search from</param>
     /// <returns>The closest tile containing sugar</returns>
-    public static Tile FindClosestSugar(Tile startTile) {
+    public static Tile FindClosestSugar(Tile startTile, int vision) {
         var sugarDistances = new List<KeyValuePair<int, Tile>>();
 
         foreach (Tile sugarTile in Sugarscape.sugarscape)
             {
                 if (sugarTile.Sugar > 0) {
-                    sugarDistances.Add(new KeyValuePair<int, Tile>(CalculateDistanceCost(startTile, sugarTile), sugarTile));
+                    int dis = CalculateDistanceCost(startTile, sugarTile);
+                    if (dis <= vision * MOVE_STRAIGHT_COST) {
+                        sugarDistances.Add(new KeyValuePair<int, Tile>(dis, sugarTile));
+                    }
                 }
         
             }
@@ -168,7 +185,7 @@ public static class Pathfinding {
         return sugarDistances[0].Value;
     }
 
-    public static Tile FindClosestSugar(Tile startTile, int sugarToTake) {
+    public static Tile FindClosestSugar(Tile startTile, float sugarToTake) {
         var sugarDistances = new List<KeyValuePair<int, Tile>>();
 
         //Search staggered

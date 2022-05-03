@@ -37,7 +37,11 @@ public class Tile {
     public Tile (int x, int y, int capacity) {
         this.x = x;
         this.y = y;
-        this.capacity = capacity * 50;
+        if (Simulation.movementStyle == Simulation.MovementStyle.CUSTOM) {
+            this.capacity = capacity * 50;
+        } else {
+            this.capacity = capacity;
+        }
         Sugar = capacity;
         isWalkable = true;
 
@@ -193,6 +197,12 @@ public class Tile {
 
     public void SetIsWalkable(bool isWalkable) {
         this.isWalkable = isWalkable;
+    }
+
+    public int ClassicGather () {
+        int sugar = this.Sugar;
+        this.Sugar = 0;
+        return sugar;
     }
 
 }

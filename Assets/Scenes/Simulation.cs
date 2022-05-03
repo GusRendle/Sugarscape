@@ -10,11 +10,11 @@ public class Simulation {
         CUSTOM
     }
 
-    public static int growbackRate = 61;
+    public static int growbackRate = 1;
     public static int initialAgentCount = 400;
     public static class Wealth {
-        public static int min = 50;
-        public static int max = 100;
+        public static float min = 50;
+        public static float max = 100;
     }
     public static class Vision {
         public static int min = 1;
@@ -43,6 +43,9 @@ public class Simulation {
     public static Sugarscape sugarscape;
     public static List<Agent> agents;
 
+    public static int dropVision;
+    public static bool mvCost = false;
+
     //Stats
     public static List<StepStats> stepsStats = new List<StepStats>();
     private static AgentsStats agentStats;
@@ -52,11 +55,28 @@ public class Simulation {
     public static string greedStats;
     public static string incomeStats;
     public static string metabStats;
+    
+    //Taxes
+    public static bool isMultiTax = false;
+    public static bool isLinearTax = false;
+    public static bool isSubs = false;
+    public static bool hasDropped = false;
+
+    public static class Tax {
+        public static float firstAmt = 1.0f;
+        public static int firstBracket = 15;
+        public static float secondAmt = 2.0f;
+        public static int secondBracket = 30;
+        public static float thirdAmt = 3.5f;
+        public static float subsAmt = 1.0f;
+        public static float subsBracket = 2.0f;
+    }
 
     /// <summary>
     /// Initialises / resets the simulation
     /// </summary>
     public static void Initialise () {
+        Simulation.hasDropped = false;
         CurrentStep = 0;
         stepsStats.Clear();
         agentStats = new AgentsStats();
@@ -65,7 +85,11 @@ public class Simulation {
         greedStats = "";
         incomeStats = "";
         metabStats = "";
-        growbackRate = Mathf.CeilToInt((float)(initialAgentCount * 2.925)/24);
+        if (Simulation.movementStyle == Simulation.MovementStyle.CUSTOM) {
+            growbackRate = Mathf.CeilToInt((float)(initialAgentCount * 2.925)/24);
+        } else {
+            growbackRate = 1;
+        }
         InitialiseSugarscape();
         InitialiseAgents();
         Render();
@@ -77,52 +101,19 @@ public class Simulation {
     /// <returns>False if the simulation has finished</returns>
     public static bool Step () {
         liveAgents = agents.FindAll(x => x.IsAlive);
-        if ( liveAgents.Count == 0  ) {
+        if ( liveAgents.Count == 0 || (CurrentStep > 600 && MultiRun) ) {
             //All agents are dead
             return false;
         }
 
         //Reset Stat Lists
         agentStats = new AgentsStats();
-
-        int one =0;
-            int tw =0;
-            int th =0;
-            int fo =0;
-            int fi =0;
-            int si =0;
-
         //Randomly goes calls for each agent to handle the step
         foreach ( Agent agent in Main.Shuffle(liveAgents)) {
             agentStats.ImportAgentData(agent);
             agent.Step();
-            switch (agent.speed)
-            {
-                case 1:
-                    one++;
-                    break;
-                case 2:
-                    tw++;
-                    break;
-                case 3:
-                    th++;
-                    break;
-                case 4:
-                    fo++;
-                    break;
-                case 5:
-                    fi++;
-                    break;
-                case 6:
-                    si++;
-                    break;
-            }
         } 
-        
-        if (CurrentStep < 601)
-        {
-            sugarscape.Step();
-        }
+        sugarscape.Step();
 
         //Update Stats
         if (CurrentStep % 10 == 0) {
@@ -136,9 +127,12 @@ public class Simulation {
         if (MultiRun) {
             if (Simulation.CurrentStep == 0) {
                 growbackRate = 74;
+                //tax = 1f;
                 //growbackRate = Mathf.CeilToInt((float)(initialAgentCount * 2.925)/24);
             }  else if (Simulation.CurrentStep == 300) {
+                hasDropped = true;
                 growbackRate = 26;
+                //isMultiTax = true;
                 //growbackRate = Mathf.CeilToInt((float)(0.5f * ((liveAgents.Count * 2.925)/24)));
             }  
             // else if (Simulation.CurrentStep == 899) {
@@ -215,13 +209,20 @@ public class Simulation {
             }
         }
         agents = new List<Agent>();
+
         for ( int i = 0 ; i < initialAgentCount ; i++ ) {
-            //Links each agent to an unoccupied location
             Tile tile = sugarscape.GetUnoccupiedTile();
-            Agent agent = new Agent(tile);
+            Agent agent;
+            if (Simulation.movementStyle == Simulation.MovementStyle.CUSTOM) {
+                agent = new Agent(tile);
+            } else {
+                agent = new Agent();
+                agent.tile = tile;
+            }
             tile.agent = agent;
             agents.Add(agent);
         }
+        
     }
 
 }  

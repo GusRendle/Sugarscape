@@ -35,6 +35,15 @@ public class UI : MonoBehaviour {
     public InputField maxGreedField;
     public InputField minGreedField;
 
+    public InputField firstTaxAmtField;
+    public InputField firstTaxBracketField;
+    public InputField secondTaxAmtField;
+    public InputField secondTaxBracketField;
+    public InputField thirdTaxAmtField;
+    public InputField subsAmtField;
+    public InputField subsBracketField;
+    public InputField dropVisionField;
+
     //Posible views for the simulation
     public enum ViewOptions {
         DEFAULT,
@@ -188,7 +197,22 @@ public class UI : MonoBehaviour {
     /// Runs when the user clicks the decrease speed button
     /// </summary>
     public void RegrowthDropBtnClicked () {
-        Simulation.growbackRate = 22;
+        Simulation.hasDropped = true;
+        Simulation.growbackRate = Mathf.CeilToInt((float)(Simulation.liveAgents.Count * 2.925)/24);
+        regrowthRate.text = Simulation.growbackRate.ToString();
+    }
+
+    public void LinearTaxBtnClicked () {
+        Simulation.isLinearTax = true;
+    }
+    public void VaribleTaxBtnClicked () {
+        Simulation.isMultiTax = true;
+    }
+    public void SubsBtnClicked () {
+        Simulation.isSubs = true;
+    }
+    public void VisionDropBtnClicked () {
+        Simulation.mvCost = true;
     }
 
     /// <summary>
@@ -238,6 +262,94 @@ public class UI : MonoBehaviour {
             Simulation.Render();
         }
     }
+
+    public void FirstTaxAmtUnfocused (string taxAmt) {
+        if ( taxAmt.Length > 0 ) {
+            float tax = float.Parse(taxAmt);
+            Simulation.Tax.firstAmt = tax;
+            firstTaxAmtField.text = tax.ToString();
+        } else {
+            float tax = Simulation.Tax.firstAmt;
+            firstTaxAmtField.text = tax.ToString();
+        }
+    }
+
+    public void SecondTaxAmtUnfocused (string taxAmt) {
+        if ( taxAmt.Length > 0 ) {
+            float tax = float.Parse(taxAmt);
+            Simulation.Tax.secondAmt = tax;
+            secondTaxAmtField.text = tax.ToString();
+        } else {
+            float tax = Simulation.Tax.secondAmt;
+            secondTaxAmtField.text = tax.ToString();
+        }
+    }
+
+    public void ThirdTaxAmtUnfocused (string taxAmt) {
+        if ( taxAmt.Length > 0 ) {
+            float tax = float.Parse(taxAmt);
+            Simulation.Tax.thirdAmt = tax;
+            thirdTaxAmtField.text = tax.ToString();
+        } else {
+            float tax = Simulation.Tax.thirdAmt;
+            thirdTaxAmtField.text = tax.ToString();
+        }
+    }
+
+    public void SubsAmtUnfocused (string subsAmt) {
+        if ( subsAmt.Length > 0 ) {
+            float subs = float.Parse(subsAmt);
+            Simulation.Tax.subsAmt = subs;
+            subsAmtField.text = subs.ToString();
+        } else {
+            float subs = Simulation.Tax.subsAmt;
+            subsAmtField.text = subs.ToString();
+        }
+    }
+
+    public void firstTaxBracketUnfocused (string taxBracket) {
+        if ( taxBracket.Length > 0 ) {
+            int bracket = int.Parse(taxBracket);
+            Simulation.Tax.firstBracket = bracket;
+            firstTaxBracketField.text = bracket.ToString();
+        } else {
+            int bracket = Simulation.Tax.firstBracket;
+            firstTaxBracketField.text = bracket.ToString();
+        }
+    }
+
+    public void secondTaxBracketUnfocused (string taxBracket) {
+        if ( taxBracket.Length > 0 ) {
+            int bracket = int.Parse(taxBracket);
+            Simulation.Tax.secondBracket = bracket;
+            secondTaxBracketField.text = bracket.ToString();
+        } else {
+            int bracket = Simulation.Tax.secondBracket;
+            secondTaxBracketField.text = bracket.ToString();
+        }
+    }
+
+    public void subsBracketUnfocused (string subsBracket) {
+        if ( subsBracket.Length > 0 ) {
+            float bracket = float.Parse(subsBracket);
+            Simulation.Tax.subsBracket = bracket;
+            subsBracketField.text = bracket.ToString();
+        } else {
+            float bracket = Simulation.Tax.subsBracket;
+            subsBracketField.text = bracket.ToString();
+        }
+    }
+
+    public void dropVisionUnfocused (string dropVision) {
+        if ( dropVision.Length > 0 ) {
+            int vision = int.Parse(dropVision);
+            Simulation.dropVision = vision;
+            subsBracketField.text = vision.ToString();
+        } else {
+            int vision = Simulation.dropVision;
+            subsBracketField.text = vision.ToString();
+        }
+    }
     
     /// <summary>
     /// Runs when the user enters a value for max wealth
@@ -245,11 +357,11 @@ public class UI : MonoBehaviour {
     /// <param name="maxWealth">The new max wealth</param>
     public void MaxWealthUnfocused (string maxWealth) {
         if ( maxWealth.Length > 0 ) {
-            int num = Mathf.Max(Simulation.Wealth.min, int.Parse(maxWealth));
+            float num = Mathf.Max(Simulation.Wealth.min, float.Parse(maxWealth));
             Simulation.Wealth.max = num;
             maxWealthField.text = num.ToString();
         } else {
-            int num = Simulation.Wealth.min;
+            float num = Simulation.Wealth.min;
             Simulation.Wealth.max = num;
             maxWealthField.text = num.ToString();
         }
@@ -261,7 +373,7 @@ public class UI : MonoBehaviour {
     /// <param name="minWealth">The new min wealth</param>
     public void MinWealthUnfocused (string minWealth) {
         if ( minWealth.Length > 0 ) {
-            int num = Mathf.Clamp(int.Parse(minWealth), 0, Simulation.Wealth.max);
+            float num = Mathf.Clamp(float.Parse(minWealth), 0f, Simulation.Wealth.max);
             Simulation.Wealth.min = num;
             minWealthField.text = num.ToString();
         } else {
@@ -307,6 +419,7 @@ public class UI : MonoBehaviour {
     public void ClassicMovementToggled (bool isToggled) {
         if ( isToggled ) {
             Simulation.movementStyle = Simulation.MovementStyle.CLASSIC;
+            Simulation.growbackRate = 1;
         }
     }
 

@@ -9,7 +9,7 @@ public class Agent {
     //Values used in agent generation
     private static int staticId = 0;
     public int id;
-    public readonly int vision;
+    public int vision;
     public readonly int metabolism;
 
     //Values used throughout simulation
@@ -27,17 +27,18 @@ public class Agent {
     private readonly Tile home;
     public int lastPathLength = 15;
 
-    public readonly int income;
-    public int wealth { get; private set; }
+    public readonly float income;
+    public float wealth { get; private set; }
     public readonly int speed;
     public readonly float greed = 0.1f;
+    public bool receiveSubs = false;
 
     /// <summary>
     /// Default agent constructor
     /// </summary>
     /// <returns>The Agent object</returns>
     public Agent (Tile tile) : this(
-        Random.Range(Simulation.Wealth.min, Simulation.Wealth.max + 1),
+        Random.Range(Simulation.Wealth.min, Simulation.Wealth.max),
         Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
         Main.IntDistrobutionRandom(0.12f, 0.33f, 0.33f, 0.05f, 0.06f, 0.11f),
         Random.Range(Simulation.AgentSpeed.min, Simulation.AgentSpeed.max + 1),
@@ -46,14 +47,29 @@ public class Agent {
         tile
     ) { }
 
+    public Agent () : this(
+        Random.Range(Mathf.FloorToInt(Simulation.Wealth.min), Mathf.CeilToInt(Simulation.Wealth.max + 1)),
+        Random.Range(Simulation.Vision.min, Simulation.Vision.max + 1),
+        Random.Range(Simulation.Metabolism.min, Simulation.Metabolism.max + 1)
+    ) { }
+
+    public Agent (int wealth, int vision, int metabolism) {
+        this.wealth = wealth;
+        this.vision = vision;
+        this.metabolism = metabolism;
+        id = staticId++;
+        SugarStore = wealth;
+        InitialiseAgent();
+    }
+
     /// <summary>
     /// Arg agent constructor
     /// </summary>
     /// <param name="income">Income of the agent</param>
     /// <param name="vision">Vision of the agent</param>
     /// <param name="metabolism">Metabolism of the agent</param>
-    public Agent (int income, int vision, int metabolism, int speed, float greed, Tile home) {
-        this.income = income;
+    public Agent (float income, int vision, int metabolism, int speed, float greed, Tile home) {
+        this.income = income * metabolism;
         this.vision = vision;
         this.metabolism = metabolism;
         this.tile = home;
@@ -70,8 +86,34 @@ public class Agent {
     /// Manage's agents actions per step
     /// </summary>
     public void Step () {
+
+        if (Simulation.hasDropped == true) {
+            if (Simulation.mvCost == true)
+            {
+                vision = Simulation.dropVision;
+            }
+
+            if (Simulation.isSubs && metabolism >= Simulation.Tax.subsBracket ) {
+                receiveSubs = true;
+            }
+
+            if (Simulation.mvCost) {
+                vision = Simulation.dropVision; 
+            }
+        }
+
+        if (receiveSubs) {
+            wealth += Simulation.Tax.subsAmt;
+        }
+
+
         wealth += income;
-        CheckSugar();
+        if (Simulation.movementStyle == Simulation.MovementStyle.CUSTOM) {
+            CheckSugar();
+        } else {
+            Move();
+            SugarStore += tile.ClassicGather();
+        }
         Eat();
         if ( SugarStore < 0 ) {
             Die();
@@ -192,14 +234,12 @@ public class Agent {
 
                         //Pre check
 
-                         //int sugarToTake = Mathf.CeilToInt(metabolism * lastPathLength);
-                         //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, sugarToTake));
+                        //  int sugarToTake = Mathf.CeilToInt((metabolism * lastPathLength)/2);
+                        //  path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, sugarToTake));
 
-                        //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile));
+                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, vision));
 
                         //path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, (lastPathLength * 2) -1 ));
-
-                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, home));
 
                         Move ();
 
@@ -218,16 +258,21 @@ public class Agent {
                                     //If the destination is not home, set next journey to return home
                                     path = Pathfinding.FindPath(tile, home);
                                     lastPathLength = path.Count + 1;
-                                    Gather(nextLocation);
+                                    
+                                    if (Simulation.isMultiTax) {
+                                        GatherMultiTax(nextLocation);
+                                    } else {
+                                        Gather(nextLocation);
+                                    }
 
                                     //Post Check
 
                                     // if (SugarStore < lastPathLength * metabolism) {
-                                    //     path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(tile, Mathf.CeilToInt(metabolism * lastPathLength)));
+                                    //     path = Pathfinding.FindPath(tile, Pathfinding.   (tile, Mathf.CeilToInt(metabolism * lastPathLength)));
                                     // }
 
-                                    if (SugarStore < lastPathLength * metabolism) {
-                                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugarDis(tile, home));
+                                    if (SugarStore < (lastPathLength * metabolism)) {
+                                        path = Pathfinding.FindPath(tile, Pathfinding.FindClosestSugar(home, vision));
                                     }
 
                                 } else {
@@ -253,8 +298,37 @@ public class Agent {
     private void Gather (Tile nextLocation) {
         //Calculates the sugar the agent needs to collect to survive + sugar taken due to greed
         int sugarToTake = Mathf.CeilToInt((metabolism * (lastPathLength) * 2 * (1 + greed)));
-        int gathered = nextLocation.Gather(sugarToTake);
+        int sugarCanBuy = Mathf.Min(sugarToTake, Mathf.FloorToInt(wealth / Simulation.Tax.firstAmt));
+        int gathered = nextLocation.Gather(sugarCanBuy);
+        wealth -= gathered * Simulation.Tax.firstAmt;
         SugarStore += gathered;
+    }
+
+    private void GatherMultiTax (Tile nextLocation) {
+        //Calculates the sugar the agent needs to collect to survive + sugar taken due to greed
+        int sugarToTake = Mathf.CeilToInt((metabolism * (lastPathLength) * 2 * (1 + greed)));
+
+        int sugarCanBuyOne = Mathf.Min(sugarToTake, Mathf.FloorToInt(wealth/Simulation.Tax.firstAmt), Simulation.Tax.firstBracket);
+        int gathered = nextLocation.Gather(sugarCanBuyOne);
+        wealth -= gathered * Simulation.Tax.firstAmt;
+        SugarStore += gathered;
+        sugarToTake -= gathered;
+
+        if (wealth > 1 && sugarToTake > 1) {
+            int sugarCanBuyTwo = Mathf.Min(sugarToTake, Mathf.FloorToInt(wealth/Simulation.Tax.secondAmt), Simulation.Tax.secondBracket);
+            int gatheredtwo = nextLocation.Gather(sugarCanBuyTwo);
+            wealth -= gatheredtwo * Simulation.Tax.secondAmt;
+            SugarStore += gatheredtwo;
+            sugarToTake -= gatheredtwo;
+        }
+
+        if (wealth > 1 && sugarToTake > 1) {
+            int sugarCanBuyThree = Mathf.Min(sugarToTake, Mathf.FloorToInt(wealth/Simulation.Tax.thirdAmt));
+            int gatheredthree = nextLocation.Gather(sugarCanBuyThree);
+            wealth -= gatheredthree * Simulation.Tax.thirdAmt;
+            SugarStore += gatheredthree;
+            sugarToTake -= gatheredthree;
+        }
     }
 
     /// <summary>
